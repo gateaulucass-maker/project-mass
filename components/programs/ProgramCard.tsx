@@ -83,7 +83,7 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
 
           <div className="relative flex-shrink-0">
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(!menuOpen); }}
               className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary/70 transition-all"
             >
               <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
@@ -91,11 +91,11 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
 
             {menuOpen && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                <div className="fixed inset-0 z-40" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); }} />
                 <div className="absolute right-0 top-10 w-44 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
                   {!program.is_active && (
                     <button
-                      onClick={() => { onActivate?.(program.id); setMenuOpen(false); toast.success("Programme activé"); }}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onActivate?.(program.id); setMenuOpen(false); toast.success("Programme activé"); }}
                       className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-secondary transition-colors text-left"
                     >
                       <Play className="w-3.5 h-3.5 text-brand-700" />
@@ -103,14 +103,14 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
                     </button>
                   )}
                   <button
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-secondary transition-colors text-left"
                   >
                     <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                     Modifier
                   </button>
                   <button
-                    onClick={() => { onDelete?.(program.id); setMenuOpen(false); toast.success("Programme supprimé"); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete?.(program.id); setMenuOpen(false); toast.success("Programme supprimé"); }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-destructive/10 text-destructive transition-colors text-left"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
