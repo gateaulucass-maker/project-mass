@@ -56,8 +56,10 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
   return (
     <AnimatePresence>
       {open && (
+        // ① Overlay plein écran (z-50)
         <div className="fixed inset-0 z-50">
-          {/* Backdrop — full screen */}
+
+          {/* ② Backdrop cliquable — derrière */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -66,14 +68,17 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
             onClick={onClose}
           />
 
-          {/* Centering container — offset for sidebar on desktop */}
-          <div className="absolute inset-0 lg:left-64 flex items-end sm:items-center justify-center sm:p-4">
+          {/* ③ Conteneur flex centré — pointer-events-none pour laisser passer les clics vers le backdrop */}
+          {/* lg:pl-[calc(16rem+1rem)] décale le centre vers la zone de contenu (sidebar 256px) */}
+          <div className="relative h-full flex items-center justify-center p-4 lg:pl-[calc(16rem+1rem)] pointer-events-none">
+
+            {/* ④ La modale elle-même — pointer-events-auto pour capturer les interactions */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 40 }}
-              transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="relative w-full sm:max-w-lg max-h-[92vh] sm:max-h-[88vh] bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-xl flex flex-col overflow-hidden"
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 16 }}
+              transition={{ type: "spring", damping: 26, stiffness: 300 }}
+              className="pointer-events-auto w-full max-w-lg max-h-[90vh] bg-card border border-border rounded-3xl shadow-xl flex flex-col overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0">
@@ -86,9 +91,9 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                 </button>
               </div>
 
-              {/* Form */}
+              {/* Form scrollable */}
               <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
-                {/* Title */}
+
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Nom du programme</label>
                   <input
@@ -100,7 +105,6 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   />
                 </div>
 
-                {/* Type */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Type d&apos;objectif</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -121,7 +125,6 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   </div>
                 </div>
 
-                {/* Dates */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Date début</label>
@@ -143,7 +146,6 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   </div>
                 </div>
 
-                {/* Weights */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Poids départ (kg)</label>
@@ -169,7 +171,6 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   </div>
                 </div>
 
-                {/* Calories & Frequency */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Calories/jour</label>
@@ -195,7 +196,6 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   </div>
                 </div>
 
-                {/* Goal */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Objectif (optionnel)</label>
                   <textarea

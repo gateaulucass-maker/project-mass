@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Dumbbell, ArrowRight, TrendingUp, Zap, CheckCircle2, ChevronRight } from "lucide-react";
+import { Dumbbell, ArrowRight, TrendingUp, Zap, CheckCircle2, ChevronRight, Flame } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
@@ -20,6 +20,8 @@ import {
   MOCK_USER,
 } from "@/lib/mock-data";
 import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+import { differenceInDays, parseISO } from "date-fns";
+import { calculateWeightProgress } from "@/lib/utils";
 
 // Mon→Push, Tue→Pull, Wed→Legs, Thu→Push, Fri→Pull, Sat→Legs, Sun→rest
 function getTodayWorkoutIndex(): number {
@@ -28,13 +30,21 @@ function getTodayWorkoutIndex(): number {
 }
 
 export default function DashboardPage() {
-  const lastProgram = MOCK_PROGRAMS[0];
+  const activeProgram = MOCK_PROGRAMS.find(p => p.is_active) ?? MOCK_PROGRAMS[0];
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
 
   const sessionsThisWeek = 4;
-  const weeklyFrequency = 4;
+  const weeklyFrequency = 5;
   const totalSessions = 47;
+
+  const daysLeft = activeProgram.end_date
+    ? differenceInDays(parseISO(activeProgram.end_date), new Date())
+    : null;
+
+  const weightProgress = activeProgram.start_weight && activeProgram.target_weight
+    ? calculateWeightProgress(currentWeight, activeProgram.start_weight, activeProgram.target_weight)
+    : 0;
 
   const todayIndex = getTodayWorkoutIndex();
   const todayWorkout = todayIndex >= 0 ? MOCK_WORKOUTS[todayIndex] : null;
@@ -74,37 +84,51 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Programme terminé banner */}
+        {/* Programme actif banner */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="relative bg-card border border-border rounded-2xl p-5 overflow-hidden"
+          className="relative bg-card border border-brand-700/20 rounded-2xl p-5 overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
+          <div className="h-0.5 gradient-brand absolute top-0 left-0 right-0" />
           <div className="flex items-start justify-between relative z-10">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Objectif atteint
+                <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-700 animate-pulse" />
+                  En cours
                 </span>
-                <span className="text-xs text-muted-foreground">{lastProgram.title}</span>
+                {daysLeft !== null && daysLeft >= 0 && (
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${daysLeft <= 7 ? "bg-orange-50 text-orange-600 border border-orange-200" : "bg-secondary text-muted-foreground border border-border"}`}>
+                    <Flame className="w-3 h-3" />
+                    {daysLeft}j restants
+                  </span>
+                )}
               </div>
-              <h2 className="text-lg font-bold">90 kg atteints</h2>
-              <p className="text-sm text-muted-foreground mt-1">+12 kg depuis la reprise — prochain programme à définir.</p>
+              <h2 className="text-lg font-bold">{activeProgram.title}</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Objectif : {activeProgram.target_weight} kg · {currentWeight} kg actuellement
+              </p>
             </div>
             <Link href="/programs">
-              <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors mt-1" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-brand-700 transition-colors mt-1" />
             </Link>
           </div>
           <div className="mt-4 relative z-10">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-muted-foreground">{lastProgram.start_weight} kg</span>
-              <span className="font-semibold text-emerald-600">100%</span>
-              <span className="text-muted-foreground">{lastProgram.target_weight} kg</span>
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-muted-foreground">{activeProgram.start_weight} kg</span>
+              <span className="font-semibold text-brand-700">{Math.round(weightProgress)}%</span>
+              <span className="text-muted-foreground">{activeProgram.target_weight} kg</span>
             </div>
             <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <div className="h-full w-full bg-emerald-500 rounded-full" />
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${weightProgress}%` }}
+                transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+                className="h-full gradient-brand rounded-full"
+              />
             </div>
           </div>
         </motion.div>
