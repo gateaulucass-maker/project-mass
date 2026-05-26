@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/programs", label: "Programmes", icon: Target },
-  { href: "/workouts", label: "Seances", icon: Dumbbell },
+  { href: "/workouts", label: "Séances", icon: Dumbbell },
   { href: "/progress", label: "Progression", icon: TrendingUp },
   { href: "/weight", label: "Poids", icon: Scale },
 ];
@@ -76,7 +76,7 @@ export function Sidebar() {
         <Link href="/settings">
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
             <Settings className="w-4 h-4" />
-            Parametres
+            Paramètres
           </div>
         </Link>
         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-brand-700 hover:bg-brand-50 transition-all">

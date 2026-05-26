@@ -1,7 +1,6 @@
 "use client";
 
 import { Bell, Search } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { MOCK_USER } from "@/lib/mock-data";
 
 interface HeaderProps {
@@ -28,10 +27,6 @@ export function Header({ title, subtitle }: HeaderProps) {
           <Bell className="w-4 h-4 text-muted-foreground" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-700 rounded-full" />
         </button>
-
-        <div className="lg:hidden">
-          <ThemeToggle compact />
-        </div>
 
         <div className="w-8 h-8 rounded-full gradient-brand flex items-center justify-center text-white text-xs font-bold glow-brand-sm">
           {MOCK_USER.full_name?.charAt(0) ?? "L"}

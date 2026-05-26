@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/programs", label: "Programmes", icon: Target },
-  { href: "/workouts", label: "Seances", icon: Dumbbell },
+  { href: "/workouts", label: "Séances", icon: Dumbbell },
   { href: "/progress", label: "Stats", icon: TrendingUp },
   { href: "/weight", label: "Poids", icon: Scale },
 ];

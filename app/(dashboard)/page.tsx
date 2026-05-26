@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Dumbbell, ArrowRight, TrendingUp, Zap, Play, ChevronRight } from "lucide-react";
+import { Dumbbell, ArrowRight, TrendingUp, Zap, CheckCircle2, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { WeightChart } from "@/components/dashboard/WeightChart";
@@ -18,34 +19,48 @@ import {
   MOCK_WORKOUTS,
   MOCK_USER,
 } from "@/lib/mock-data";
-import { getProgramTypeColor, getProgramTypeLabel } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+
+// Mon→Push, Tue→Pull, Wed→Legs, Thu→Push, Fri→Pull, Sat→Legs, Sun→rest
+function getTodayWorkoutIndex(): number {
+  const day = new Date().getDay();
+  return day === 0 ? -1 : (day - 1) % 3;
+}
 
 export default function DashboardPage() {
-  const activeProgram = MOCK_PROGRAMS.find(p => p.is_active);
-  const lastProgram = MOCK_PROGRAMS[0]; // PPL terminé
+  const lastProgram = MOCK_PROGRAMS[0];
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
 
-  // Séances cette semaine : 4/4
   const sessionsThisWeek = 4;
   const weeklyFrequency = 4;
   const totalSessions = 47;
 
-  // Prochaine séance : rotation Push → Pull → Legs (basé sur le jour)
-  const cycleIndex = new Date().getDay() % 3;
-  const nextWorkout = MOCK_WORKOUTS[cycleIndex];
+  const todayIndex = getTodayWorkoutIndex();
+  const todayWorkout = todayIndex >= 0 ? MOCK_WORKOUTS[todayIndex] : null;
 
-  const weightProgress = lastProgram?.start_weight && lastProgram?.target_weight
-    ? Math.min(100, Math.round(((currentWeight - lastProgram.start_weight) / (lastProgram.target_weight - lastProgram.start_weight)) * 100))
-    : 0;
+  const [todayDone, setTodayDone] = useState(0);
+
+  useEffect(() => {
+    if (!todayWorkout) return;
+    try {
+      const key = getWeekStorageKey(0);
+      const raw = localStorage.getItem(key);
+      const checked = new Set<string>(raw ? JSON.parse(raw) as string[] : []);
+      const done = todayWorkout.exercises?.filter(e => checked.has(`${todayWorkout.id}_${e.id}`)).length ?? 0;
+      setTodayDone(done);
+    } catch {}
+  }, [todayWorkout?.id]);
+
+  const todayTotal = todayWorkout?.exercises?.length ?? 0;
+  const todayComplete = todayDone > 0 && todayDone === todayTotal;
 
   return (
     <div className="flex-1">
       <Header />
 
-      <div className="px-4 lg:px-6 py-5 space-y-6 max-w-6xl">
-        {/* Welcome header */}
+      <div className="px-4 lg:px-6 py-5 space-y-5 max-w-6xl">
+        {/* Welcome */}
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
@@ -59,11 +74,11 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Programme termine — banner recap */}
+        {/* Programme terminé banner */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.05 }}
           className="relative bg-card border border-border rounded-2xl p-5 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
@@ -76,7 +91,7 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground">{lastProgram.title}</span>
               </div>
               <h2 className="text-lg font-bold">90 kg atteints</h2>
-              <p className="text-sm text-muted-foreground mt-1">+12 kg depuis la reprise — prochain programme a definir.</p>
+              <p className="text-sm text-muted-foreground mt-1">+12 kg depuis la reprise — prochain programme à définir.</p>
             </div>
             <Link href="/programs">
               <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors mt-1" />
@@ -94,7 +109,7 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
+        {/* Stats */}
         <StatsCards
           currentWeight={currentWeight}
           targetWeight={90}
@@ -103,26 +118,59 @@ export default function DashboardPage() {
           totalSessions={totalSessions}
         />
 
-        {/* Next Workout CTA */}
-        {nextWorkout && (
+        {/* Séance du jour */}
+        {todayWorkout ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.15 }}
           >
-            <Link href={`/workouts/${nextWorkout.id}`}>
-              <div className="bg-card border border-border rounded-2xl p-5 hover:border-brand-700/40 transition-all group card-hover flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center flex-shrink-0 glow-brand-sm group-hover:scale-105 transition-transform">
-                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+            <Link href="/workouts">
+              <div className={`bg-card border rounded-2xl p-5 hover:border-brand-700/40 transition-all group card-hover flex items-center gap-4 ${todayComplete ? "border-emerald-200" : "border-border"}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-105 ${todayComplete ? "bg-emerald-500" : "gradient-brand glow-brand-sm"}`}>
+                  {todayComplete
+                    ? <CheckCircle2 className="w-5 h-5 text-white" />
+                    : <Dumbbell className="w-5 h-5 text-white" />
+                  }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-brand-700 font-medium mb-0.5">Prochaine séance</p>
-                  <p className="font-bold truncate">{nextWorkout.title}</p>
-                  <p className="text-xs text-muted-foreground">{nextWorkout.exercises?.length} exercices · ~60 min</p>
+                  <p className={`text-xs font-medium mb-0.5 ${todayComplete ? "text-emerald-600" : "text-brand-700"}`}>
+                    Séance du jour
+                  </p>
+                  <p className="font-bold truncate">{todayWorkout.title}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-muted-foreground">{todayDone}/{todayTotal} exercices</p>
+                    {todayDone > 0 && !todayComplete && (
+                      <div className="flex-1 max-w-24 h-1 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full gradient-brand rounded-full transition-all"
+                          style={{ width: `${(todayDone / todayTotal) * 100}%` }}
+                        />
+                      </div>
+                    )}
+                    {todayComplete && (
+                      <span className="text-xs font-semibold text-emerald-600">Terminée</span>
+                    )}
+                  </div>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-brand-700 group-hover:translate-x-1 transition-all flex-shrink-0" />
               </div>
             </Link>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+              <Dumbbell className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">Jour de repos</p>
+              <p className="text-xs text-muted-foreground">Récupération — profites-en.</p>
+            </div>
           </motion.div>
         )}
 
@@ -131,26 +179,26 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.2 }}
             className="bg-card border border-border rounded-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold">Évolution du poids</h3>
-                <p className="text-xs text-muted-foreground">4 dernières semaines</p>
+                <p className="text-xs text-muted-foreground">Depuis la reprise</p>
               </div>
               <Link href="/weight" className="text-xs text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">
                 Voir tout <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
-            <WeightChart data={MOCK_BODYWEIGHT} targetWeight={activeProgram?.target_weight} />
+            <WeightChart data={MOCK_BODYWEIGHT} />
           </motion.div>
 
           {/* Volume Chart */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
             className="bg-card border border-border rounded-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
@@ -159,7 +207,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">Séances par semaine</p>
               </div>
               <Link href="/workouts" className="text-xs text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">
-                Voir tout <ArrowRight className="w-3 h-3" />
+                Séances <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <VolumeChart />
@@ -170,7 +218,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.3 }}
           className="bg-card border border-border rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
@@ -192,7 +240,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.35 }}
           className="bg-card border border-border rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">

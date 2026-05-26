@@ -9,23 +9,23 @@ import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { MOCK_WORKOUTS } from "@/lib/mock-data";
 import { getWorkoutTypeLabel } from "@/lib/utils";
+import { useWorkoutChecks } from "@/hooks/useWorkoutChecks";
+
+// Mon→Push, Tue→Pull, Wed→Legs, Thu→Push, Fri→Pull, Sat→Legs, Sun→rest
+function getTodayWorkoutId(): string | null {
+  const day = new Date().getDay(); // 0=Sun
+  if (day === 0) return null;
+  return MOCK_WORKOUTS[(day - 1) % 3]?.id ?? null;
+}
 
 export default function WorkoutsPage() {
   const [weekOffset, setWeekOffset] = useState(0);
-  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const { checked, toggle } = useWorkoutChecks(weekOffset);
 
   const baseDate = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const weekNum = getISOWeek(baseDate);
   const monthLabel = format(baseDate, "MMMM yyyy", { locale: fr });
-
-  function toggle(key: string) {
-    setChecked(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
+  const todayWorkoutId = weekOffset === 0 ? getTodayWorkoutId() : null;
 
   return (
     <div className="flex-1">
@@ -43,7 +43,10 @@ export default function WorkoutsPage() {
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div className="text-center">
-            <p className="font-bold text-sm">Semaine {weekNum}</p>
+            <p className="font-bold text-sm">
+              Semaine {weekNum}
+              {weekOffset === 0 && <span className="ml-2 text-[10px] font-semibold text-brand-700 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full">Cette semaine</span>}
+            </p>
             <p className="text-xs text-muted-foreground capitalize">{monthLabel}</p>
           </div>
           <button
@@ -57,9 +60,8 @@ export default function WorkoutsPage() {
         {/* Workout blocks */}
         {MOCK_WORKOUTS.map((workout, wi) => {
           const exercises = workout.exercises ?? [];
-          const doneCount = exercises.filter(e =>
-            checked.has(`${weekOffset}-${workout.id}-${e.id}`)
-          ).length;
+          const isToday = workout.id === todayWorkoutId;
+          const doneCount = exercises.filter(e => checked.has(`${workout.id}_${e.id}`)).length;
           const allDone = doneCount === exercises.length && exercises.length > 0;
           const pct = exercises.length > 0 ? (doneCount / exercises.length) * 100 : 0;
 
@@ -69,15 +71,22 @@ export default function WorkoutsPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: wi * 0.08 }}
-              className="bg-card border border-border rounded-2xl overflow-hidden"
+              className={`bg-card border rounded-2xl overflow-hidden ${isToday ? "border-brand-700/30 shadow-[0_0_20px_rgba(185,28,28,0.07)]" : "border-border"}`}
             >
+              {isToday && <div className="h-0.5 gradient-brand w-full" />}
+
               {/* Block header */}
               <div className={`px-5 py-4 border-b border-border flex items-center justify-between transition-colors ${allDone ? "bg-emerald-50/60" : ""}`}>
                 <div>
-                  <div className="flex items-center gap-2 mb-0.5">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                     <span className="text-[11px] font-semibold text-brand-700 uppercase tracking-wider">
                       {getWorkoutTypeLabel(workout.workout_type)}
                     </span>
+                    {isToday && (
+                      <span className="text-[10px] font-bold text-brand-700 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full">
+                        Aujourd'hui
+                      </span>
+                    )}
                     {allDone && (
                       <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
                         Terminé
@@ -94,13 +103,13 @@ export default function WorkoutsPage() {
               {/* Exercise rows */}
               <div className="divide-y divide-border/40">
                 {exercises.map(exercise => {
-                  const key = `${weekOffset}-${workout.id}-${exercise.id}`;
-                  const done = checked.has(key);
+                  const id = `${workout.id}_${exercise.id}`;
+                  const done = checked.has(id);
 
                   return (
                     <button
                       key={exercise.id}
-                      onClick={() => toggle(key)}
+                      onClick={() => toggle(id)}
                       className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-secondary/40 active:bg-secondary/60 transition-colors text-left"
                     >
                       <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
@@ -128,7 +137,7 @@ export default function WorkoutsPage() {
                 <motion.div
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="h-full bg-brand-700"
+                  className={`h-full ${allDone ? "bg-emerald-500" : "bg-brand-700"}`}
                 />
               </div>
             </motion.div>
