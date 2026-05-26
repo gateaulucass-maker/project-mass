@@ -11,10 +11,10 @@ import { MOCK_PERSONAL_RECORDS, MOCK_WEEKLY_STATS } from "@/lib/mock-data";
 import { formatVolume } from "@/lib/utils";
 
 const KEY_LIFTS = [
-  { name: "Développé couché", current: 105, prev: 100, reps: 3, emoji: "🏋️" },
-  { name: "Squat", current: 147.5, prev: 140, reps: 3, emoji: "🦵" },
-  { name: "Soulevé de terre", current: 175, prev: 165, reps: 2, emoji: "💪" },
-  { name: "Développé militaire", current: 75, prev: 72.5, reps: 5, emoji: "🔝" },
+  { name: "Squat", current: 90, prev: 70, reps: 6 },
+  { name: "Tractions / tirage vertical", current: 66, prev: 55, reps: 8 },
+  { name: "Rowing barre", current: 45, prev: 35, reps: 8 },
+  { name: "Developpe militaire", current: 24, prev: 18, reps: 8 },
 ];
 
 export default function ProgressPage() {
@@ -66,17 +66,17 @@ export default function ProgressPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.07 }}
-                  className="bg-secondary/40 rounded-xl p-3.5 border border-border/40"
+                  className="bg-secondary rounded-xl p-3.5 border border-border"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <span className="text-lg">{lift.emoji}</span>
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
-                      +{progress.toFixed(1)}%
+                    <span className="text-xs font-medium text-muted-foreground">{lift.reps} reps</span>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
+                      +{progress.toFixed(0)}%
                     </span>
                   </div>
                   <p className="font-black text-xl">{lift.current} kg</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{lift.name}</p>
-                  <p className="text-xs text-muted-foreground">{lift.reps} reps · PR</p>
+                  <p className="text-xs font-medium mt-0.5">{lift.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Avant: {lift.prev} kg</p>
                 </motion.div>
               );
             })}

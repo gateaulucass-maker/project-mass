@@ -23,15 +23,21 @@ import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const activeProgram = MOCK_PROGRAMS.find(p => p.is_active);
+  const lastProgram = MOCK_PROGRAMS[0]; // PPL terminé
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
-  const dayOfWeek = new Date().getDay();
-  const sessionsThisWeek = dayOfWeek >= 1 ? Math.min(dayOfWeek, 4) : 0;
 
-  const nextWorkout = MOCK_WORKOUTS[sessionsThisWeek % MOCK_WORKOUTS.length];
+  // Séances cette semaine : 4/4
+  const sessionsThisWeek = 4;
+  const weeklyFrequency = 4;
+  const totalSessions = 47;
 
-  const weightProgress = activeProgram?.start_weight && activeProgram?.target_weight
-    ? Math.round(((currentWeight - activeProgram.start_weight) / (activeProgram.target_weight - activeProgram.start_weight)) * 100)
+  // Prochaine séance : rotation Push → Pull → Legs (basé sur le jour)
+  const cycleIndex = new Date().getDay() % 3;
+  const nextWorkout = MOCK_WORKOUTS[cycleIndex];
+
+  const weightProgress = lastProgram?.start_weight && lastProgram?.target_weight
+    ? Math.min(100, Math.round(((currentWeight - lastProgram.start_weight) / (lastProgram.target_weight - lastProgram.start_weight)) * 100))
     : 0;
 
   return (
@@ -51,65 +57,50 @@ export default function DashboardPage() {
               Bonjour, {MOCK_USER.full_name?.split(" ")[0]}
             </h1>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 border border-brand-200 rounded-full">
-            <span className="text-sm font-bold text-brand-700">12 jours</span>
-          </div>
         </motion.div>
 
-        {/* Active Program Banner */}
-        {activeProgram && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="relative bg-card border border-border rounded-2xl p-5 overflow-hidden group"
-          >
-            <div className="absolute inset-0 bg-violet-glow opacity-40 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-700/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="flex items-start justify-between relative z-10">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={cn("text-xs font-medium px-2.5 py-0.5 rounded-full border", getProgramTypeColor(activeProgram.type))}>
-                    {getProgramTypeLabel(activeProgram.type)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">Programme actif</span>
-                </div>
-                <h2 className="text-lg font-bold">{activeProgram.title}</h2>
-                <p className="text-sm text-muted-foreground mt-1">{activeProgram.goal}</p>
+        {/* Programme termine — banner recap */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative bg-card border border-border rounded-2xl p-5 overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex items-start justify-between relative z-10">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Objectif atteint
+                </span>
+                <span className="text-xs text-muted-foreground">{lastProgram.title}</span>
               </div>
-              <Link href="/programs">
-                <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors mt-1" />
-              </Link>
+              <h2 className="text-lg font-bold">90 kg atteints</h2>
+              <p className="text-sm text-muted-foreground mt-1">+12 kg depuis la reprise — prochain programme a definir.</p>
             </div>
-
-            {/* Progress bar */}
-            <div className="mt-4 relative z-10">
-              <div className="flex items-center justify-between text-xs mb-2">
-                <span className="text-muted-foreground">{activeProgram.start_weight} kg</span>
-                <span className="font-semibold text-brand-700">{weightProgress}% de l&apos;objectif</span>
-                <span className="text-muted-foreground">{activeProgram.target_weight} kg</span>
-              </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${weightProgress}%` }}
-                  transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-                  className="h-full gradient-brand rounded-full"
-                />
-              </div>
+            <Link href="/programs">
+              <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors mt-1" />
+            </Link>
+          </div>
+          <div className="mt-4 relative z-10">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-muted-foreground">{lastProgram.start_weight} kg</span>
+              <span className="font-semibold text-emerald-600">100%</span>
+              <span className="text-muted-foreground">{lastProgram.target_weight} kg</span>
             </div>
-          </motion.div>
-        )}
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div className="h-full w-full bg-emerald-500 rounded-full" />
+            </div>
+          </div>
+        </motion.div>
 
         {/* Stats Grid */}
         <StatsCards
           currentWeight={currentWeight}
-          targetWeight={activeProgram?.target_weight ?? 85}
+          targetWeight={90}
           sessionsThisWeek={sessionsThisWeek}
-          weeklyFrequency={activeProgram?.weekly_frequency ?? 6}
-          streak={12}
-          calories={activeProgram?.calories_target ?? 3200}
+          weeklyFrequency={weeklyFrequency}
+          totalSessions={totalSessions}
         />
 
         {/* Next Workout CTA */}

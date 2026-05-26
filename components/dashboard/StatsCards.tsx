@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Scale, Flame, TrendingUp, Calendar, Target, Zap } from "lucide-react";
+import { Scale, TrendingUp, Calendar, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -23,19 +23,19 @@ function StatCard({ label, value, subValue, icon: Icon, color, change, changeUp,
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="bg-card border border-border rounded-2xl p-5 card-hover relative overflow-hidden group"
     >
-      {/* Background glow */}
-      <div className={cn("absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-20 group-hover:opacity-30 transition-opacity", color)} />
+      <div className={cn("absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-15 group-hover:opacity-25 transition-opacity", color)} />
 
       <div className="flex items-start justify-between mb-3">
-        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", color.replace("bg-", "bg-").replace("/100", "/20"))}>
-          <Icon className={cn("w-4.5 h-4.5", color.replace("bg-", "text-").replace("/20", ""))} />
+        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", color.replace("bg-", "").includes("brand") ? "bg-brand-50" : color.replace("/20", "/15"))}>
+          <Icon className={cn("w-4 h-4", color.includes("brand") ? "text-brand-700" : color.replace("bg-", "text-").replace("/20", ""))} />
         </div>
         {change && (
           <span className={cn(
             "text-xs font-medium px-2 py-0.5 rounded-full",
-            changeUp ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+            changeUp === undefined ? "bg-secondary text-muted-foreground" :
+            changeUp ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"
           )}>
-            {changeUp ? "+" : ""}{change}
+            {changeUp === true ? "+" : ""}{change}
           </span>
         )}
       </div>
@@ -54,18 +54,10 @@ interface StatsCardsProps {
   targetWeight: number;
   sessionsThisWeek: number;
   weeklyFrequency: number;
-  streak: number;
-  calories: number;
+  totalSessions: number;
 }
 
-export function StatsCards({
-  currentWeight,
-  targetWeight,
-  sessionsThisWeek,
-  weeklyFrequency,
-  streak,
-  calories,
-}: StatsCardsProps) {
+export function StatsCards({ currentWeight, targetWeight, sessionsThisWeek, weeklyFrequency, totalSessions }: StatsCardsProps) {
   const weightDiff = (currentWeight - 78).toFixed(1);
 
   const stats: StatCardProps[] = [
@@ -75,12 +67,12 @@ export function StatsCards({
       subValue: `Objectif: ${targetWeight} kg`,
       icon: Scale,
       color: "bg-brand-700/20",
-      change: `${weightDiff} kg`,
+      change: `${Number(weightDiff) > 0 ? "+" : ""}${weightDiff} kg`,
       changeUp: Number(weightDiff) > 0,
       index: 0,
     },
     {
-      label: "Séances semaine",
+      label: "Seances semaine",
       value: `${sessionsThisWeek}/${weeklyFrequency}`,
       subValue: "Cette semaine",
       icon: Calendar,
@@ -90,22 +82,20 @@ export function StatsCards({
       index: 1,
     },
     {
-      label: "Série consécutive",
-      value: `${streak} jours`,
-      subValue: "Record: 18 jours",
-      icon: Flame,
-      color: "bg-orange-500/20",
-      change: "🔥",
+      label: "Seances totales",
+      value: String(totalSessions),
+      subValue: "Depuis le debut",
+      icon: Trophy,
+      color: "bg-amber-500/20",
       index: 2,
     },
     {
-      label: "Calories cibles",
-      value: `${calories}`,
-      subValue: "kcal / jour",
-      icon: Zap,
+      label: "Progression poids",
+      value: `+${weightDiff} kg`,
+      subValue: "Depuis reprise",
+      icon: TrendingUp,
       color: "bg-emerald-500/20",
-      change: "Maintenu",
-      changeUp: true,
+      change: "Fev 2026",
       index: 3,
     },
   ];

@@ -47,7 +47,7 @@ export default function WeightPage() {
       setAdding(false);
       toast.success(`${w} kg enregistré ✓`);
     } else {
-      toast.error("Erreur — mode démo, configure Google Sheets d'abord");
+      toast.error("Impossible d'enregistrer le poids");
     }
   }
 

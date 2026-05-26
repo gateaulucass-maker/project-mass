@@ -15,17 +15,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: { default: "Project Mass", template: "%s — Project Mass" },
-  description: "Ton coach de musculation premium. Suivi, progression, performance.",
-  keywords: ["musculation", "fitness", "tracking", "progression", "entraînement"],
-  authors: [{ name: "Project Mass" }],
-  manifest: "/manifest.json",
+  description: "Suivi musculation — progression, performances, poids.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0b10" },
-  ],
+  themeColor: "#B91C1C",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

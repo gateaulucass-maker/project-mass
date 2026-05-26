@@ -85,7 +85,7 @@ export const MOCK_PROGRAMS: Program[] = [
     calories_target: 3400,
     weekly_frequency: 5,
     goal: "Prise de masse — plus de volume, plus de stress musculaire, plus de masse visuelle.",
-    is_active: true,
+    is_active: false,
     created_at: "2026-04-01T10:00:00Z",
     workouts: MOCK_WORKOUTS,
   },
@@ -144,10 +144,10 @@ export const MOCK_WEEKLY_STATS: WeeklyStats[] = [
 ];
 
 export const MOCK_PERFORMANCE_DATA = [
-  { date: "Fev", squat: 70, tirage: 55, rowing: 35, presse: 60 },
-  { date: "Mar", squat: 80, tirage: 60, rowing: 40, presse: 70 },
-  { date: "Avr", squat: 90, tirage: 66, rowing: 45, presse: 80 },
-  { date: "Mai", squat: 90, tirage: 66, rowing: 45, presse: 85 },
+  { date: "Fev", squat: 70, tractions: 55, rowing: 35, militaire: 18 },
+  { date: "Mar", squat: 80, tractions: 60, rowing: 40, militaire: 20 },
+  { date: "Avr", squat: 90, tractions: 66, rowing: 45, militaire: 22 },
+  { date: "Mai", squat: 90, tractions: 66, rowing: 45, militaire: 24 },
 ];
 
 export const MOCK_AI_CONVERSATIONS: AiConversation[] = [];

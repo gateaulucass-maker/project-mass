@@ -69,16 +69,16 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.4 }}
-            className="fixed inset-x-4 top-[5%] md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-card border border-border rounded-3xl shadow-card-dark z-50 overflow-hidden max-h-[90vh] overflow-y-auto"
+            className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg md:max-h-[90vh] bg-card border border-border rounded-3xl shadow-xl z-50 flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border sticky top-0 bg-card z-10">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0">
               <h2 className="text-lg font-bold">Nouveau programme</h2>
               <button onClick={onClose} className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
               {/* Title */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Nom du programme</label>

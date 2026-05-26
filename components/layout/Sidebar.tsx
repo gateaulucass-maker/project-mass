@@ -8,7 +8,6 @@ import {
   Dumbbell,
   TrendingUp,
   Scale,
-  Camera,
   Target,
   LogOut,
   Settings,
@@ -22,7 +21,6 @@ const navItems = [
   { href: "/workouts", label: "Seances", icon: Dumbbell },
   { href: "/progress", label: "Progression", icon: TrendingUp },
   { href: "/weight", label: "Poids", icon: Scale },
-  { href: "/photos", label: "Photos", icon: Camera },
 ];
 
 export function Sidebar() {
