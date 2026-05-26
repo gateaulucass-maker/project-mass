@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Dumbbell, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Dumbbell, ChevronLeft, ChevronRight, Check, Pencil, X } from "lucide-react";
 import { format, startOfWeek, addWeeks, getISOWeek } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Header } from "@/components/layout/Header";
@@ -13,14 +13,50 @@ import { useWorkoutChecks } from "@/hooks/useWorkoutChecks";
 
 // Mon→Push, Tue→Pull, Wed→Legs, Thu→Push, Fri→Pull, Sat→Legs, Sun→rest
 function getTodayWorkoutId(): string | null {
-  const day = new Date().getDay(); // 0=Sun
+  const day = new Date().getDay();
   if (day === 0) return null;
   return MOCK_WORKOUTS[(day - 1) % 3]?.id ?? null;
 }
 
+interface ExerciseOverride {
+  weight?: number;
+  reps?: number;
+}
+
+const OVERRIDES_KEY = "pm_exercise_overrides";
+
 export default function WorkoutsPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { checked, toggle } = useWorkoutChecks(weekOffset);
+
+  const [overrides, setOverrides] = useState<Record<string, ExerciseOverride>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState("");
+  const [editReps, setEditReps] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(OVERRIDES_KEY);
+      if (raw) setOverrides(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  function openEdit(exerciseId: string, currentWeight: number, currentReps: number) {
+    const ov = overrides[exerciseId];
+    setEditWeight(String(ov?.weight ?? currentWeight));
+    setEditReps(String(ov?.reps ?? currentReps));
+    setEditingId(exerciseId);
+  }
+
+  function saveEdit(exerciseId: string) {
+    const w = parseFloat(editWeight);
+    const r = parseInt(editReps);
+    if (isNaN(w) || isNaN(r)) { setEditingId(null); return; }
+    const next = { ...overrides, [exerciseId]: { weight: w, reps: r } };
+    setOverrides(next);
+    try { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(next)); } catch {}
+    setEditingId(null);
+  }
 
   const baseDate = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const weekNum = getISOWeek(baseDate);
@@ -45,7 +81,11 @@ export default function WorkoutsPage() {
           <div className="text-center">
             <p className="font-bold text-sm">
               Semaine {weekNum}
-              {weekOffset === 0 && <span className="ml-2 text-[10px] font-semibold text-brand-700 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full">Cette semaine</span>}
+              {weekOffset === 0 && (
+                <span className="ml-2 text-[10px] font-semibold text-brand-700 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full">
+                  Cette semaine
+                </span>
+              )}
             </p>
             <p className="text-xs text-muted-foreground capitalize">{monthLabel}</p>
           </div>
@@ -105,29 +145,92 @@ export default function WorkoutsPage() {
                 {exercises.map(exercise => {
                   const id = `${workout.id}_${exercise.id}`;
                   const done = checked.has(id);
+                  const isEditing = editingId === exercise.id;
+                  const ov = overrides[exercise.id];
+                  const displayWeight = ov?.weight ?? exercise.weight;
+                  const displayReps = ov?.reps ?? exercise.reps;
+                  const hasOverride = ov?.weight !== undefined || ov?.reps !== undefined;
 
                   return (
-                    <button
-                      key={exercise.id}
-                      onClick={() => toggle(id)}
-                      className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-secondary/40 active:bg-secondary/60 transition-colors text-left"
-                    >
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        done ? "bg-brand-700 border-brand-700" : "border-border bg-white"
-                      }`}>
-                        {done && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                    <div key={exercise.id}>
+                      {/* Main row */}
+                      <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-secondary/20 transition-colors">
+                        {/* Checkbox */}
+                        <button
+                          onClick={() => toggle(id)}
+                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            done ? "bg-brand-700 border-brand-700" : "border-border bg-white"
+                          }`}
+                        >
+                          {done && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                        </button>
+
+                        {/* Info — click to edit */}
+                        <button
+                          onClick={() => isEditing ? setEditingId(null) : openEdit(exercise.id, exercise.weight, exercise.reps)}
+                          className="flex-1 min-w-0 text-left"
+                        >
+                          <p className={`text-sm font-medium leading-tight ${done ? "text-muted-foreground line-through" : ""}`}>
+                            {exercise.name}
+                            {hasOverride && <span className="ml-1.5 text-[10px] font-bold text-brand-700">modifié</span>}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {exercise.sets} × {displayReps === 1 ? "tenu" : `${displayReps} reps`}
+                            {displayWeight > 0 ? ` · ${displayWeight} kg` : ""}
+                          </p>
+                        </button>
+
+                        {/* Edit toggle */}
+                        <button
+                          onClick={() => isEditing ? setEditingId(null) : openEdit(exercise.id, exercise.weight, exercise.reps)}
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${isEditing ? "bg-brand-50 text-brand-700" : "text-muted-foreground/50 hover:text-muted-foreground"}`}
+                        >
+                          {isEditing ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium transition-colors leading-tight ${done ? "text-muted-foreground line-through" : ""}`}>
-                          {exercise.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {exercise.sets} × {exercise.reps === 1 ? "tenu" : `${exercise.reps} reps`}
-                          {exercise.weight > 0 ? ` · ${exercise.weight} kg` : ""}
-                        </p>
-                      </div>
-                    </button>
+                      {/* Inline edit panel */}
+                      <AnimatePresence>
+                        {isEditing && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.18 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-5 pb-4 pt-2 bg-brand-50/40 border-t border-brand-100 flex items-end gap-3">
+                              <div className="flex-1 space-y-1">
+                                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Poids (kg)</label>
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  value={editWeight}
+                                  onChange={e => setEditWeight(e.target.value)}
+                                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-700/40 transition-all"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="flex-1 space-y-1">
+                                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Reps</label>
+                                <input
+                                  type="number"
+                                  value={editReps}
+                                  onChange={e => setEditReps(e.target.value)}
+                                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-700/40 transition-all"
+                                />
+                              </div>
+                              <button
+                                onClick={() => saveEdit(exercise.id)}
+                                className="px-4 py-2 gradient-brand text-white text-sm font-semibold rounded-lg hover:opacity-90 active:scale-95 transition-all flex-shrink-0"
+                              >
+                                OK
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   );
                 })}
               </div>

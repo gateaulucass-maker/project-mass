@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isSheetsConfigured } from "@/lib/google-sheets";
 import { getBodyweightLogs, logBodyweight } from "@/services/sheets-bodyweight";
 import { MOCK_BODYWEIGHT } from "@/lib/mock-data";
+import type { BodyweightLog } from "@/types";
 
 export async function GET() {
   if (!isSheetsConfigured()) {
@@ -11,19 +12,33 @@ export async function GET() {
     const logs = await getBodyweightLogs();
     return NextResponse.json(logs);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("[bodyweight GET]", err.message);
+    return NextResponse.json(MOCK_BODYWEIGHT);
   }
 }
 
 export async function POST(req: Request) {
+  const body = await req.json();
+  const weight = parseFloat(body.weight);
+
+  // Réponse locale de secours — toujours valide côté UI
+  const fallback: BodyweightLog = {
+    id: `bw_${Date.now()}`,
+    user_id: "local",
+    weight,
+    created_at: new Date().toISOString(),
+  };
+
   if (!isSheetsConfigured()) {
-    return NextResponse.json({ error: "Not configured" }, { status: 503 });
+    return NextResponse.json(fallback);
   }
+
   try {
-    const { weight } = await req.json();
-    const log = await logBodyweight(parseFloat(weight));
+    const log = await logBodyweight(weight);
     return NextResponse.json(log);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("[bodyweight POST]", err.message);
+    // Sheets indisponible : on retourne quand même un log valide
+    return NextResponse.json(fallback);
   }
 }

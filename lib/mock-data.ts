@@ -81,7 +81,7 @@ export const MOCK_PROGRAMS: Program[] = [
     start_date: "2026-04-01",
     end_date: "2026-06-01",
     start_weight: 85,
-    target_weight: 93,
+    target_weight: 90,
     calories_target: 3400,
     weekly_frequency: 5,
     goal: "Prise de masse — plus de volume, plus de stress musculaire, plus de masse visuelle.",
