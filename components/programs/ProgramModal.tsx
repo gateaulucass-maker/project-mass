@@ -69,11 +69,11 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.4 }}
-            className="fixed inset-x-4 top-[5%] md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-card border border-border/50 rounded-3xl shadow-card-dark z-50 overflow-hidden max-h-[90vh] overflow-y-auto"
+            className="fixed inset-x-4 top-[5%] md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-card border border-border rounded-3xl shadow-card-dark z-50 overflow-hidden max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border/50 sticky top-0 bg-card z-10">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border sticky top-0 bg-card z-10">
               <h2 className="text-lg font-bold">Nouveau programme</h2>
-              <button onClick={onClose} className="w-8 h-8 rounded-xl bg-secondary/50 flex items-center justify-center hover:bg-secondary transition-all">
+              <button onClick={onClose} className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -87,7 +87,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   onChange={e => update("title", e.target.value)}
                   placeholder="ex: PPL Prise de masse"
                   required
-                  className="w-full px-4 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="w-full px-4 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                 />
               </div>
 
@@ -102,8 +102,8 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                       onClick={() => update("type", type)}
                       className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
                         form.type === type
-                          ? "bg-violet-600/20 border-violet-500/40 text-violet-400"
-                          : "bg-secondary/40 border-border/50 text-muted-foreground hover:border-border"
+                          ? "bg-brand-700/20 border-brand-700/40 text-brand-700"
+                          : "bg-secondary/40 border-border text-muted-foreground hover:border-border"
                       }`}
                     >
                       {getProgramTypeLabel(type)}
@@ -120,7 +120,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                     type="date"
                     value={form.start_date}
                     onChange={e => update("start_date", e.target.value)}
-                    className="w-full px-3 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full px-3 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -129,7 +129,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                     type="date"
                     value={form.end_date ?? ""}
                     onChange={e => update("end_date", e.target.value)}
-                    className="w-full px-3 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full px-3 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                   />
                 </div>
               </div>
@@ -144,7 +144,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                     value={form.start_weight ?? ""}
                     onChange={e => update("start_weight", parseFloat(e.target.value))}
                     placeholder="80.0"
-                    className="w-full px-3 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full px-3 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -155,7 +155,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                     value={form.target_weight ?? ""}
                     onChange={e => update("target_weight", parseFloat(e.target.value))}
                     placeholder="87.0"
-                    className="w-full px-3 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full px-3 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                   />
                 </div>
               </div>
@@ -169,7 +169,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                     value={form.calories_target ?? ""}
                     onChange={e => update("calories_target", parseInt(e.target.value))}
                     placeholder="3200"
-                    className="w-full px-3 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full px-3 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -177,7 +177,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   <select
                     value={form.weekly_frequency}
                     onChange={e => update("weekly_frequency", parseInt(e.target.value))}
-                    className="w-full px-3 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full px-3 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
                   >
                     {[2, 3, 4, 5, 6].map(n => (
                       <option key={n} value={n}>{n}×/semaine</option>
@@ -194,14 +194,14 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
                   onChange={e => update("goal", e.target.value)}
                   placeholder="Décris ton objectif principal..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all resize-none"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 gradient-violet text-white font-semibold rounded-xl glow-violet-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 gradient-brand text-white font-semibold rounded-xl glow-brand-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer le programme"}
               </button>

@@ -6,9 +6,9 @@ import { MOCK_WEEKLY_STATS } from "@/lib/mock-data";
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border/50 rounded-xl px-3 py-2.5 shadow-lg text-xs">
+    <div className="bg-card border border-border rounded-xl px-3 py-2.5 shadow-lg text-xs">
       <p className="text-muted-foreground font-medium mb-1">{label}</p>
-      <p className="font-bold text-violet-400">{payload[0]?.value} séances</p>
+      <p className="font-bold text-brand-700">{payload[0]?.value} séances</p>
       <p className="text-muted-foreground">{(payload[1]?.value / 1000).toFixed(1)}t volume</p>
     </div>
   );

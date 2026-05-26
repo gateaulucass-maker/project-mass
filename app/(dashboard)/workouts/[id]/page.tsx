@@ -26,7 +26,7 @@ export default function WorkoutDetailPage() {
         <div className="flex items-center gap-3 mb-5">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 rounded-xl bg-secondary/50 border border-border/50 flex items-center justify-center hover:bg-secondary transition-all"
+            className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
@@ -47,8 +47,8 @@ export default function WorkoutDetailPage() {
             { label: "Durée est.", value: `~${estimatedTime}min`, icon: Clock },
             { label: "Séries tot.", value: String(workout.exercises?.reduce((s, e) => s + e.sets, 0) ?? 0), icon: RotateCcw },
           ].map(stat => (
-            <div key={stat.label} className="bg-card border border-border/50 rounded-xl p-3 text-center">
-              <stat.icon className="w-4 h-4 text-violet-400 mx-auto mb-1" />
+            <div key={stat.label} className="bg-card border border-border rounded-xl p-3 text-center">
+              <stat.icon className="w-4 h-4 text-brand-700 mx-auto mb-1" />
               <p className="font-bold text-sm">{stat.value}</p>
               <p className="text-xs text-muted-foreground">{stat.label}</p>
             </div>
@@ -59,7 +59,7 @@ export default function WorkoutDetailPage() {
         <Link href={`/workouts/active?workout=${workout.id}`}>
           <motion.button
             whileTap={{ scale: 0.97 }}
-            className="w-full py-4 gradient-violet text-white font-bold text-base rounded-2xl glow-violet flex items-center justify-center gap-3 mb-6 hover:opacity-90 transition-all"
+            className="w-full py-4 gradient-brand text-white font-bold text-base rounded-2xl glow-violet flex items-center justify-center gap-3 mb-6 hover:opacity-90 transition-all"
           >
             <Play className="w-5 h-5 fill-white" />
             Démarrer la séance
@@ -76,13 +76,13 @@ export default function WorkoutDetailPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="bg-card border border-border/50 rounded-2xl overflow-hidden"
+              className="bg-card border border-border rounded-2xl overflow-hidden"
             >
               <button
                 onClick={() => setExpandedEx(expandedEx === ex.id ? null : ex.id)}
                 className="w-full flex items-center gap-4 p-4 text-left"
               >
-                <div className="w-8 h-8 rounded-lg bg-violet-500/15 border border-violet-500/20 flex items-center justify-center flex-shrink-0 text-xs font-bold text-violet-400">
+                <div className="w-8 h-8 rounded-lg bg-brand-700/15 border border-brand-700/20 flex items-center justify-center flex-shrink-0 text-xs font-bold text-brand-700">
                   {i + 1}
                 </div>
 
@@ -94,7 +94,7 @@ export default function WorkoutDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-1 rounded-lg">
+                  <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-lg">
                     {getMuscleGroupLabel(ex.muscle_group)}
                   </span>
                   {expandedEx === ex.id ? (

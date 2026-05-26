@@ -24,10 +24,10 @@ export function WorkoutCard({ workout, index }: WorkoutCardProps) {
       transition={{ delay: index * 0.06 }}
     >
       <Link href={`/workouts/${workout.id}`}>
-        <div className="bg-card border border-border/50 rounded-2xl p-4 hover:border-violet-500/30 transition-all group card-hover">
+        <div className="bg-card border border-border rounded-2xl p-4 hover:border-brand-700/30 transition-all group card-hover">
           <div className="flex items-center gap-4">
             {/* Icon */}
-            <div className="w-11 h-11 rounded-xl bg-secondary/70 border border-border/50 flex items-center justify-center flex-shrink-0 group-hover:gradient-violet group-hover:border-transparent transition-all">
+            <div className="w-11 h-11 rounded-xl bg-secondary/70 border border-border flex items-center justify-center flex-shrink-0 group-hover:gradient-brand group-hover:border-transparent transition-all">
               <Dumbbell className="w-5 h-5 text-muted-foreground group-hover:text-white transition-colors" />
             </div>
 
@@ -49,7 +49,7 @@ export function WorkoutCard({ workout, index }: WorkoutCardProps) {
 
             {/* Action */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-brand-700 group-hover:translate-x-0.5 transition-all" />
             </div>
           </div>
 

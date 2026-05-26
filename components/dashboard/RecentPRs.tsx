@@ -23,16 +23,16 @@ export function RecentPRs({ prs }: RecentPRsProps) {
           className={cn(
             "flex items-center gap-3 p-3 rounded-xl border transition-all",
             pr.is_new
-              ? "bg-violet-500/10 border-violet-500/20"
+              ? "bg-brand-700/10 border-brand-700/20"
               : "bg-secondary/40 border-border/40 hover:bg-secondary/70"
           )}
         >
           <div className={cn(
             "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-            pr.is_new ? "bg-violet-500/20" : "bg-secondary"
+            pr.is_new ? "bg-brand-700/20" : "bg-secondary"
           )}>
             {pr.is_new ? (
-              <Trophy className="w-4 h-4 text-violet-400" />
+              <Trophy className="w-4 h-4 text-brand-700" />
             ) : (
               <TrendingUp className="w-4 h-4 text-muted-foreground" />
             )}
@@ -42,7 +42,7 @@ export function RecentPRs({ prs }: RecentPRsProps) {
             <div className="flex items-center gap-2">
               <p className="text-sm font-medium truncate">{pr.exercise_name}</p>
               {pr.is_new && (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-violet-500/20 text-violet-400 rounded-full border border-violet-500/30 flex-shrink-0">
+                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-brand-700/20 text-brand-700 rounded-full border border-brand-700/30 flex-shrink-0">
                   PR
                 </span>
               )}

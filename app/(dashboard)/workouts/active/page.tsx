@@ -104,7 +104,7 @@ function ActiveWorkoutContent() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center max-w-sm"
         >
-          <div className="w-24 h-24 rounded-full gradient-violet flex items-center justify-center mx-auto mb-6 glow-violet">
+          <div className="w-24 h-24 rounded-full gradient-brand flex items-center justify-center mx-auto mb-6 glow-violet">
             <CheckCircle2 className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-black mb-2">GG !</h1>
@@ -127,7 +127,7 @@ function ActiveWorkoutContent() {
           </div>
           <button
             onClick={() => router.push("/workouts")}
-            className="w-full py-4 gradient-violet text-white font-bold rounded-2xl glow-violet"
+            className="w-full py-4 gradient-brand text-white font-bold rounded-2xl glow-violet"
           >
             Retour aux séances
           </button>
@@ -139,18 +139,18 @@ function ActiveWorkoutContent() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50 px-4 py-3">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border px-4 py-3">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center"
+            className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
 
           <div className="text-center">
             <p className="text-xs text-muted-foreground">{workout.title}</p>
-            <p className="text-sm font-bold text-violet-400">{formatElapsed(elapsed)}</p>
+            <p className="text-sm font-bold text-brand-700">{formatElapsed(elapsed)}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ function ActiveWorkoutContent() {
             <motion.div
               animate={{ width: `${(completedSetsTotal / totalSets) * 100}%` }}
               transition={{ duration: 0.3 }}
-              className="h-full gradient-violet rounded-full"
+              className="h-full gradient-brand rounded-full"
             />
           </div>
         </div>
@@ -189,15 +189,15 @@ function ActiveWorkoutContent() {
               className="text-center"
             >
               <div className="relative w-40 h-40 mx-auto mb-4">
-                <div className="absolute inset-0 rounded-full border-4 border-violet-500/20" />
+                <div className="absolute inset-0 rounded-full border-4 border-brand-700/20" />
                 <motion.div
-                  className="absolute inset-0 rounded-full border-4 border-violet-500"
+                  className="absolute inset-0 rounded-full border-4 border-brand-700"
                   style={{ borderRightColor: "transparent", borderBottomColor: "transparent" }}
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-5xl font-black text-violet-400">{restTimer}</span>
+                  <span className="text-5xl font-black text-brand-700">{restTimer}</span>
                 </div>
               </div>
               <p className="text-white/70 text-lg font-semibold">Repos</p>
@@ -213,7 +213,7 @@ function ActiveWorkoutContent() {
           <button
             onClick={() => setCurrentExIdx(Math.max(0, currentExIdx - 1))}
             disabled={currentExIdx === 0}
-            className="w-9 h-9 rounded-xl bg-secondary/50 border border-border/50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -227,7 +227,7 @@ function ActiveWorkoutContent() {
                   onClick={() => setCurrentExIdx(i)}
                   className={cn(
                     "w-2 h-2 rounded-full transition-all",
-                    i === currentExIdx ? "w-6 bg-violet-500" : done ? "bg-emerald-500/60" : "bg-secondary"
+                    i === currentExIdx ? "w-6 bg-brand-700" : done ? "bg-emerald-500/60" : "bg-secondary"
                   )}
                 />
               );
@@ -237,7 +237,7 @@ function ActiveWorkoutContent() {
           <button
             onClick={() => setCurrentExIdx(Math.min(exercises.length - 1, currentExIdx + 1))}
             disabled={currentExIdx === exercises.length - 1}
-            className="w-9 h-9 rounded-xl bg-secondary/50 border border-border/50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -254,14 +254,14 @@ function ActiveWorkoutContent() {
               transition={{ duration: 0.2 }}
             >
               {/* Exercise header */}
-              <div className="bg-card border border-border/50 rounded-2xl p-5 mb-4">
+              <div className="bg-card border border-border rounded-2xl p-5 mb-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">
                       Exercice {currentExIdx + 1}/{exercises.length}
                     </p>
                     <h2 className="text-xl font-black">{currentEx.name}</h2>
-                    <p className="text-sm text-violet-400 mt-0.5">{getMuscleGroupLabel(currentEx.muscle_group)}</p>
+                    <p className="text-sm text-brand-700 mt-0.5">{getMuscleGroupLabel(currentEx.muscle_group)}</p>
                   </div>
                   {currentExCompleted && (
                     <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
@@ -289,7 +289,7 @@ function ActiveWorkoutContent() {
                     transition={{ delay: si * 0.04 }}
                     className={cn(
                       "bg-card border rounded-2xl p-4 transition-all",
-                      set.completed ? "border-emerald-500/30 bg-emerald-500/5" : "border-border/50"
+                      set.completed ? "border-emerald-500/30 bg-emerald-500/5" : "border-border"
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -307,7 +307,7 @@ function ActiveWorkoutContent() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => updateSet(si, "weight", -2.5)}
-                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border/50 flex items-center justify-center active:scale-95 transition-all"
+                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border flex items-center justify-center active:scale-95 transition-all"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
@@ -317,7 +317,7 @@ function ActiveWorkoutContent() {
                           </div>
                           <button
                             onClick={() => updateSet(si, "weight", 2.5)}
-                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border/50 flex items-center justify-center active:scale-95 transition-all"
+                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border flex items-center justify-center active:scale-95 transition-all"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -330,7 +330,7 @@ function ActiveWorkoutContent() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => updateSet(si, "reps", -1)}
-                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border/50 flex items-center justify-center active:scale-95 transition-all"
+                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border flex items-center justify-center active:scale-95 transition-all"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
@@ -339,7 +339,7 @@ function ActiveWorkoutContent() {
                           </div>
                           <button
                             onClick={() => updateSet(si, "reps", 1)}
-                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border/50 flex items-center justify-center active:scale-95 transition-all"
+                            className="w-9 h-9 rounded-xl bg-secondary/60 border border-border flex items-center justify-center active:scale-95 transition-all"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -354,7 +354,7 @@ function ActiveWorkoutContent() {
                           "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
                           set.completed
                             ? "bg-emerald-500/20 border border-emerald-500/30"
-                            : "gradient-violet glow-violet-sm"
+                            : "gradient-brand glow-brand-sm"
                         )}
                       >
                         {set.completed ? (
@@ -378,7 +378,7 @@ function ActiveWorkoutContent() {
                   </div>
                   <button
                     onClick={() => setCurrentExIdx(currentExIdx + 1)}
-                    className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 flex-shrink-0"
+                    className="text-xs text-brand-700 hover:text-brand-400 flex items-center gap-1 flex-shrink-0"
                   >
                     Suivant <ChevronRight className="w-3 h-3" />
                   </button>
@@ -395,8 +395,8 @@ function ActiveWorkoutContent() {
           className={cn(
             "w-full py-4 font-bold text-base rounded-2xl flex items-center justify-center gap-3 transition-all",
             allSetsCompleted
-              ? "gradient-violet text-white glow-violet"
-              : "bg-secondary/50 border border-border/50 text-muted-foreground"
+              ? "gradient-brand text-white glow-violet"
+              : "bg-secondary border border-border text-muted-foreground"
           )}
         >
           <CheckCircle2 className="w-5 h-5" />
@@ -409,7 +409,7 @@ function ActiveWorkoutContent() {
 
 export default function ActiveWorkoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-brand-700 border-t-transparent animate-spin" /></div>}>
       <ActiveWorkoutContent />
     </Suspense>
   );

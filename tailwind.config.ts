@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -16,19 +15,6 @@ const config: Config = {
     },
     extend: {
       colors: {
-        violet: {
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6d28d9",
-          800: "#5b21b6",
-          900: "#4c1d95",
-          950: "#2e1065",
-        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -62,6 +48,27 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        brand: {
+          50:  "#fef2f2",
+          100: "#fee2e2",
+          200: "#fecaca",
+          300: "#fca5a5",
+          400: "#f87171",
+          500: "#ef4444",
+          600: "#dc2626",
+          700: "#b91c1c",
+          800: "#991b1b",
+          900: "#7f1d1d",
+          950: "#450a0a",
+        },
+        sand: {
+          100: "#f9f3ec",
+          200: "#f0e4d4",
+          300: "#e4cdb0",
+          400: "#d4b896",
+          500: "#c4a07a",
+          600: "#a8845d",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -106,14 +113,14 @@ const config: Config = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "violet-glow": "radial-gradient(ellipse at center, rgba(124, 58, 237, 0.15) 0%, transparent 70%)",
+        "brand-glow": "radial-gradient(ellipse at center, rgba(185, 28, 28, 0.1) 0%, transparent 70%)",
       },
       boxShadow: {
-        "violet-sm": "0 0 15px rgba(124, 58, 237, 0.2)",
-        violet: "0 0 30px rgba(124, 58, 237, 0.3)",
-        "violet-lg": "0 0 60px rgba(124, 58, 237, 0.4)",
-        "card-dark": "0 4px 24px rgba(0, 0, 0, 0.4)",
-        "card-hover": "0 8px 40px rgba(0, 0, 0, 0.5)",
+        "brand-sm": "0 0 15px rgba(185, 28, 28, 0.15)",
+        brand: "0 0 30px rgba(185, 28, 28, 0.2)",
+        "brand-lg": "0 0 60px rgba(185, 28, 28, 0.3)",
+        "card-light": "0 2px 16px rgba(0, 0, 0, 0.06)",
+        "card-hover": "0 6px 32px rgba(0, 0, 0, 0.1)",
       },
     },
   },

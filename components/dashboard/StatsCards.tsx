@@ -21,7 +21,7 @@ function StatCard({ label, value, subValue, icon: Icon, color, change, changeUp,
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="bg-card border border-border/50 rounded-2xl p-5 card-hover relative overflow-hidden group"
+      className="bg-card border border-border rounded-2xl p-5 card-hover relative overflow-hidden group"
     >
       {/* Background glow */}
       <div className={cn("absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-20 group-hover:opacity-30 transition-opacity", color)} />
@@ -74,7 +74,7 @@ export function StatsCards({
       value: `${currentWeight} kg`,
       subValue: `Objectif: ${targetWeight} kg`,
       icon: Scale,
-      color: "bg-violet-500/20",
+      color: "bg-brand-700/20",
       change: `${weightDiff} kg`,
       changeUp: Number(weightDiff) > 0,
       index: 0,

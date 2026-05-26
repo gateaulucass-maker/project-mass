@@ -48,12 +48,11 @@ export default function DashboardPage() {
           <div>
             <p className="text-sm text-muted-foreground capitalize">{today}</p>
             <h1 className="text-2xl font-bold mt-0.5">
-              Bonjour, {MOCK_USER.full_name?.split(" ")[0]} 👋
+              Bonjour, {MOCK_USER.full_name?.split(" ")[0]}
             </h1>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
-            <span className="text-base">🔥</span>
-            <span className="text-sm font-bold text-orange-400">12 jours</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 border border-brand-200 rounded-full">
+            <span className="text-sm font-bold text-brand-700">12 jours</span>
           </div>
         </motion.div>
 
@@ -63,10 +62,10 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="relative bg-card border border-border/50 rounded-2xl p-5 overflow-hidden group"
+            className="relative bg-card border border-border rounded-2xl p-5 overflow-hidden group"
           >
             <div className="absolute inset-0 bg-violet-glow opacity-40 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-700/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="flex items-start justify-between relative z-10">
               <div className="flex-1">
@@ -88,7 +87,7 @@ export default function DashboardPage() {
             <div className="mt-4 relative z-10">
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="text-muted-foreground">{activeProgram.start_weight} kg</span>
-                <span className="font-semibold text-violet-400">{weightProgress}% de l&apos;objectif</span>
+                <span className="font-semibold text-brand-700">{weightProgress}% de l&apos;objectif</span>
                 <span className="text-muted-foreground">{activeProgram.target_weight} kg</span>
               </div>
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -96,7 +95,7 @@ export default function DashboardPage() {
                   initial={{ width: 0 }}
                   animate={{ width: `${weightProgress}%` }}
                   transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-                  className="h-full gradient-violet rounded-full"
+                  className="h-full gradient-brand rounded-full"
                 />
               </div>
             </div>
@@ -121,16 +120,16 @@ export default function DashboardPage() {
             transition={{ delay: 0.2 }}
           >
             <Link href={`/workouts/${nextWorkout.id}`}>
-              <div className="bg-card border border-border/50 rounded-2xl p-5 hover:border-violet-500/40 transition-all group card-hover flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl gradient-violet flex items-center justify-center flex-shrink-0 glow-violet-sm group-hover:scale-105 transition-transform">
+              <div className="bg-card border border-border rounded-2xl p-5 hover:border-brand-700/40 transition-all group card-hover flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center flex-shrink-0 glow-brand-sm group-hover:scale-105 transition-transform">
                   <Play className="w-5 h-5 text-white fill-white ml-0.5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-violet-400 font-medium mb-0.5">Prochaine séance</p>
+                  <p className="text-xs text-brand-700 font-medium mb-0.5">Prochaine séance</p>
                   <p className="font-bold truncate">{nextWorkout.title}</p>
                   <p className="text-xs text-muted-foreground">{nextWorkout.exercises?.length} exercices · ~60 min</p>
                 </div>
-                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-violet-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-brand-700 group-hover:translate-x-1 transition-all flex-shrink-0" />
               </div>
             </Link>
           </motion.div>
@@ -142,14 +141,14 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="bg-card border border-border/50 rounded-2xl p-5"
+            className="bg-card border border-border rounded-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold">Évolution du poids</h3>
                 <p className="text-xs text-muted-foreground">4 dernières semaines</p>
               </div>
-              <Link href="/weight" className="text-xs text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1">
+              <Link href="/weight" className="text-xs text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">
                 Voir tout <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -161,14 +160,14 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-card border border-border/50 rounded-2xl p-5"
+            className="bg-card border border-border rounded-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold">Fréquence d&apos;entraînement</h3>
                 <p className="text-xs text-muted-foreground">Séances par semaine</p>
               </div>
-              <Link href="/workouts" className="text-xs text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1">
+              <Link href="/workouts" className="text-xs text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">
                 Voir tout <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -181,17 +180,17 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="bg-card border border-border/50 rounded-2xl p-5"
+          className="bg-card border border-border rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-violet-400" />
+              <TrendingUp className="w-4 h-4 text-brand-700" />
               <div>
                 <h3 className="font-semibold">Performances clés</h3>
                 <p className="text-xs text-muted-foreground">Évolution des charges (kg)</p>
               </div>
             </div>
-            <Link href="/progress" className="text-xs text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1">
+            <Link href="/progress" className="text-xs text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">
               Détails <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -203,17 +202,17 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-card border border-border/50 rounded-2xl p-5"
+          className="bg-card border border-border rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-violet-400" />
+              <Zap className="w-4 h-4 text-brand-700" />
               <div>
                 <h3 className="font-semibold">Records personnels</h3>
                 <p className="text-xs text-muted-foreground">Dernières performances</p>
               </div>
             </div>
-            <Link href="/progress" className="text-xs text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1">
+            <Link href="/progress" className="text-xs text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">
               Voir tout <ArrowRight className="w-3 h-3" />
             </Link>
           </div>

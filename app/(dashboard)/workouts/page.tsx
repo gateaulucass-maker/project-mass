@@ -31,12 +31,12 @@ export default function WorkoutsPage() {
           <motion.div
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-2xl"
+            className="flex items-center gap-3 p-3.5 bg-brand-700/10 border border-brand-700/20 rounded-2xl"
           >
-            <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-brand-700 animate-pulse" />
             <div>
-              <p className="text-sm font-medium text-violet-300">{activeProgram.title}</p>
-              <p className="text-xs text-violet-400/70">{activeProgram.weekly_frequency} séances/semaine · {workouts.length} templates</p>
+              <p className="text-sm font-medium text-brand-400">{activeProgram.title}</p>
+              <p className="text-xs text-brand-700/70">{activeProgram.weekly_frequency} séances/semaine · {workouts.length} templates</p>
             </div>
           </motion.div>
         )}

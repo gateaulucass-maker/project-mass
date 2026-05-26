@@ -34,7 +34,7 @@ export default function ProgramsPage() {
           action={
             <button
               onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 gradient-violet text-white text-sm font-semibold rounded-xl glow-violet-sm hover:opacity-90 active:scale-[0.98] transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 gradient-brand text-white text-sm font-semibold rounded-xl glow-brand-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
               <Plus className="w-4 h-4" />
               Nouveau
@@ -72,7 +72,7 @@ export default function ProgramsPage() {
                 action={
                   <button
                     onClick={() => setModalOpen(true)}
-                    className="px-5 py-2.5 gradient-violet text-white text-sm font-semibold rounded-xl glow-violet-sm hover:opacity-90 transition-all"
+                    className="px-5 py-2.5 gradient-brand text-white text-sm font-semibold rounded-xl glow-brand-sm hover:opacity-90 transition-all"
                   >
                     Créer un programme
                   </button>

@@ -69,9 +69,9 @@ export default function WeightPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border/50 rounded-2xl p-6 relative overflow-hidden"
+          className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-brand-700/10 rounded-full blur-3xl pointer-events-none" />
           <div className="flex items-end justify-between relative z-10">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Poids actuel</p>
@@ -90,7 +90,7 @@ export default function WeightPage() {
             </div>
             <button
               onClick={() => setAdding(!adding)}
-              className="w-12 h-12 rounded-2xl gradient-violet flex items-center justify-center glow-violet-sm hover:opacity-90 active:scale-95 transition-all"
+              className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center glow-brand-sm hover:opacity-90 active:scale-95 transition-all"
             >
               <Plus className="w-5 h-5 text-white" />
             </button>
@@ -101,7 +101,7 @@ export default function WeightPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               onSubmit={handleAdd}
-              className="mt-4 pt-4 border-t border-border/50 flex gap-3"
+              className="mt-4 pt-4 border-t border-border flex gap-3"
             >
               <input
                 type="number"
@@ -110,12 +110,12 @@ export default function WeightPage() {
                 onChange={e => setNewWeight(e.target.value)}
                 placeholder="Ex: 81.5"
                 autoFocus
-                className="flex-1 px-4 py-2.5 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                className="flex-1 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all"
               />
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2.5 gradient-violet text-white font-semibold rounded-xl text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                className="px-5 py-2.5 gradient-brand text-white font-semibold rounded-xl text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
               >
                 {saving ? "..." : "Enregistrer"}
               </button>
@@ -126,7 +126,7 @@ export default function WeightPage() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Objectif", value: activeProgram?.target_weight ? `${activeProgram.target_weight} kg` : "—", color: "text-violet-400" },
+            { label: "Objectif", value: activeProgram?.target_weight ? `${activeProgram.target_weight} kg` : "—", color: "text-brand-700" },
             { label: "Moy. semaine", value: `${weekAvg.toFixed(1)} kg`, color: "text-blue-400" },
             { label: "Départ", value: firstLog ? `${firstLog.weight} kg` : "—", color: "text-muted-foreground" },
           ].map((s, i) => (
@@ -135,7 +135,7 @@ export default function WeightPage() {
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
-              className="bg-card border border-border/50 rounded-xl p-3 text-center"
+              className="bg-card border border-border rounded-xl p-3 text-center"
             >
               <p className={`font-bold text-sm ${s.color}`}>{s.value}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
@@ -145,7 +145,7 @@ export default function WeightPage() {
 
         {/* Chart */}
         {logs.length > 1 && (
-          <div className="bg-card border border-border/50 rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="font-semibold mb-4">Évolution du poids</h3>
             <WeightChart data={logs} targetWeight={activeProgram?.target_weight} />
           </div>
@@ -153,10 +153,10 @@ export default function WeightPage() {
 
         {/* Progress to target */}
         {activeProgram?.target_weight && activeProgram?.start_weight && latest && (
-          <div className="bg-card border border-border/50 rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-muted-foreground">Progression vers l&apos;objectif</span>
-              <span className="font-semibold text-violet-400">
+              <span className="font-semibold text-brand-700">
                 {Math.round(((latest.weight - activeProgram.start_weight) / (activeProgram.target_weight - activeProgram.start_weight)) * 100)}%
               </span>
             </div>
@@ -165,7 +165,7 @@ export default function WeightPage() {
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(100, Math.max(0, ((latest.weight - activeProgram.start_weight) / (activeProgram.target_weight - activeProgram.start_weight)) * 100))}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full gradient-violet rounded-full"
+                className="h-full gradient-brand rounded-full"
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
@@ -177,7 +177,7 @@ export default function WeightPage() {
 
         {/* History */}
         {logs.length > 0 && (
-          <div className="bg-card border border-border/50 rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="font-semibold mb-4">Historique</h3>
             <div className="space-y-2">
               {[...logs].reverse().slice(0, 15).map((log, i) => {

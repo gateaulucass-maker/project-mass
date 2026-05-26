@@ -21,7 +21,7 @@ const lines = [
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border/50 rounded-xl px-3 py-2.5 shadow-lg text-xs space-y-1.5">
+    <div className="bg-card border border-border rounded-xl px-3 py-2.5 shadow-lg text-xs space-y-1.5">
       <p className="text-muted-foreground font-medium">{label}</p>
       {payload.map((p: any) => (
         <div key={p.dataKey} className="flex items-center gap-2">

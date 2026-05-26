@@ -67,8 +67,8 @@ export default function PhotosPage() {
               onClick={() => setCompareMode(!compareMode)}
               className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
                 compareMode
-                  ? "bg-violet-500/20 border-violet-500/40 text-violet-400"
-                  : "bg-secondary/50 border-border/50 text-muted-foreground hover:text-foreground"
+                  ? "bg-brand-700/20 border-brand-700/40 text-brand-700"
+                  : "bg-secondary border-border text-muted-foreground hover:text-foreground"
               }`}
             >
               {compareMode ? "Annuler" : "Comparer"}
@@ -80,7 +80,7 @@ export default function PhotosPage() {
           <motion.div
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-sm text-violet-300"
+            className="p-3.5 bg-brand-700/10 border border-brand-700/20 rounded-xl text-sm text-brand-400"
           >
             Sélectionne 2 photos pour les comparer — {comparePhotos.filter(Boolean).length}/2 sélectionnées
           </motion.div>
@@ -94,7 +94,7 @@ export default function PhotosPage() {
             className="grid grid-cols-2 gap-3"
           >
             {comparePhotos.map((photo, i) => photo && (
-              <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border/50">
+              <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border">
                 <img src={photo.image_url} alt="" className="w-full h-full object-cover" />
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                   <p className="text-white text-xs font-medium">{photo.note}</p>
@@ -112,11 +112,11 @@ export default function PhotosPage() {
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-            isDragActive ? "border-violet-500 bg-violet-500/10" : "border-border/50 hover:border-violet-500/50 hover:bg-secondary/30"
+            isDragActive ? "border-brand-700 bg-brand-700/10" : "border-border hover:border-brand-700/50 hover:bg-secondary/30"
           }`}
         >
           <input {...getInputProps()} />
-          <div className="w-12 h-12 rounded-2xl bg-secondary/80 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-3">
             <Upload className="w-5 h-5 text-muted-foreground" />
           </div>
           <p className="text-sm font-medium">{isDragActive ? "Dépose ici !" : "Ajouter une photo"}</p>
@@ -149,7 +149,7 @@ export default function PhotosPage() {
                     <div
                       onClick={() => compareMode ? toggleCompare(photo) : setSelected(photo)}
                       className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 cursor-pointer transition-all ${
-                        isSelected ? "border-violet-500 ring-2 ring-violet-500/30" : "border-border/30 hover:border-violet-500/40"
+                        isSelected ? "border-brand-700 ring-2 ring-brand-700/30" : "border-border/30 hover:border-brand-700/40"
                       }`}
                     >
                       <img src={photo.image_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
@@ -175,7 +175,7 @@ export default function PhotosPage() {
                       </div>
 
                       {isSelected && (
-                        <div className="absolute top-2 left-2 w-6 h-6 rounded-full gradient-violet flex items-center justify-center">
+                        <div className="absolute top-2 left-2 w-6 h-6 rounded-full gradient-brand flex items-center justify-center">
                           <span className="text-white text-xs font-bold">
                             {comparePhotos[0]?.id === photo.id ? "1" : "2"}
                           </span>
@@ -209,7 +209,7 @@ export default function PhotosPage() {
           >
             <button
               onClick={() => setSelected(null)}
-              className="absolute -top-4 -right-4 w-8 h-8 bg-card border border-border/50 rounded-full flex items-center justify-center z-10"
+              className="absolute -top-4 -right-4 w-8 h-8 bg-card border border-border rounded-full flex items-center justify-center z-10"
             >
               <X className="w-4 h-4" />
             </button>

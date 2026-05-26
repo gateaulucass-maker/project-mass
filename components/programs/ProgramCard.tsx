@@ -34,12 +34,12 @@ export function ProgramCard({ program, index, onActivate, onDelete }: ProgramCar
       className={cn(
         "bg-card border rounded-2xl p-5 relative overflow-hidden transition-all",
         program.is_active
-          ? "border-violet-500/30 shadow-violet-sm"
-          : "border-border/50 hover:border-border"
+          ? "border-brand-700/30 shadow-violet-sm"
+          : "border-border hover:border-border"
       )}
     >
       {program.is_active && (
-        <div className="absolute inset-0 bg-violet-600/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-brand-700/5 pointer-events-none" />
       )}
 
       {/* Header */}
@@ -62,19 +62,19 @@ export function ProgramCard({ program, index, onActivate, onDelete }: ProgramCar
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="w-8 h-8 rounded-xl bg-secondary/50 hover:bg-secondary flex items-center justify-center transition-all"
+            className="w-8 h-8 rounded-xl bg-secondary hover:bg-secondary flex items-center justify-center transition-all"
           >
             <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-10 w-40 bg-card border border-border/50 rounded-xl shadow-card-dark overflow-hidden z-50">
+            <div className="absolute right-0 top-10 w-40 bg-card border border-border rounded-xl shadow-card-dark overflow-hidden z-50">
               {!program.is_active && (
                 <button
                   onClick={() => { onActivate?.(program.id); setMenuOpen(false); toast.success("Programme activé"); }}
                   className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-secondary transition-colors text-left"
                 >
-                  <Play className="w-3.5 h-3.5 text-violet-400" />
+                  <Play className="w-3.5 h-3.5 text-brand-700" />
                   Activer
                 </button>
               )}
@@ -118,7 +118,7 @@ export function ProgramCard({ program, index, onActivate, onDelete }: ProgramCar
         <div className="mb-4 relative z-10">
           <div className="flex justify-between text-xs mb-1.5">
             <span className="text-muted-foreground">{program.start_weight} kg</span>
-            <span className="text-violet-400 font-medium">{Math.round(progress)}%</span>
+            <span className="text-brand-700 font-medium">{Math.round(progress)}%</span>
             <span className="text-muted-foreground">{program.target_weight} kg</span>
           </div>
           <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -126,7 +126,7 @@ export function ProgramCard({ program, index, onActivate, onDelete }: ProgramCar
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
-              className="h-full gradient-violet rounded-full"
+              className="h-full gradient-brand rounded-full"
             />
           </div>
         </div>

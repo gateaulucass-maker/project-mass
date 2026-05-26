@@ -42,9 +42,9 @@ export default function ProgressPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
-              className="bg-card border border-border/50 rounded-2xl p-4"
+              className="bg-card border border-border rounded-2xl p-4"
             >
-              <p className="text-2xl font-black text-violet-400">{stat.value}</p>
+              <p className="text-2xl font-black text-brand-700">{stat.value}</p>
               <p className="text-sm font-medium mt-0.5">{stat.label}</p>
               <p className={`text-xs mt-0.5 ${stat.up ? "text-emerald-400" : "text-red-400"}`}>{stat.change}</p>
             </motion.div>
@@ -52,9 +52,9 @@ export default function ProgressPage() {
         </div>
 
         {/* Key lifts PRs */}
-        <div className="bg-card border border-border/50 rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Trophy className="w-4 h-4 text-violet-400" />
+            <Trophy className="w-4 h-4 text-brand-700" />
             <h3 className="font-semibold">Mouvements clés</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -84,9 +84,9 @@ export default function ProgressPage() {
         </div>
 
         {/* Performance chart */}
-        <div className="bg-card border border-border/50 rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-violet-400" />
+            <TrendingUp className="w-4 h-4 text-brand-700" />
             <div>
               <h3 className="font-semibold">Évolution des charges</h3>
               <p className="text-xs text-muted-foreground">Mouvements de base (kg)</p>
@@ -96,7 +96,7 @@ export default function ProgressPage() {
         </div>
 
         {/* Volume chart */}
-        <div className="bg-card border border-border/50 rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-semibold">Volume hebdomadaire</h3>
@@ -110,9 +110,9 @@ export default function ProgressPage() {
         </div>
 
         {/* Recent PRs */}
-        <div className="bg-card border border-border/50 rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-4 h-4 text-violet-400" />
+            <Zap className="w-4 h-4 text-brand-700" />
             <h3 className="font-semibold">Records personnels récents</h3>
           </div>
           <RecentPRs prs={MOCK_PERSONAL_RECORDS} />

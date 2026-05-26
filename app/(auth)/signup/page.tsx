@@ -50,7 +50,7 @@ export default function SignupPage() {
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center justify-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-2xl gradient-violet flex items-center justify-center glow-violet">
+        <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center glow-violet">
           <Dumbbell className="w-6 h-6 text-white" />
         </div>
         <div>
@@ -59,7 +59,7 @@ export default function SignupPage() {
         </div>
       </div>
 
-      <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-card-dark">
+      <div className="bg-card border border-border rounded-3xl p-8 shadow-card-dark">
         <div className="mb-6">
           <h2 className="text-2xl font-bold">Créer un compte</h2>
           <p className="text-muted-foreground mt-1 text-sm">Commence à tracker ta progression</p>
@@ -69,8 +69,8 @@ export default function SignupPage() {
         <div className="grid grid-cols-2 gap-2 mb-6">
           {features.map((f) => (
             <div key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-                <Check className="w-2.5 h-2.5 text-violet-400" />
+              <div className="w-4 h-4 rounded-full bg-brand-700/20 flex items-center justify-center flex-shrink-0">
+                <Check className="w-2.5 h-2.5 text-brand-700" />
               </div>
               {f}
             </div>
@@ -87,7 +87,7 @@ export default function SignupPage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Lucas"
-                className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all placeholder:text-muted-foreground/50"
+                className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all placeholder:text-muted-foreground/50"
               />
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function SignupPage() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="ton@email.com"
                 required
-                className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all placeholder:text-muted-foreground/50"
+                className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all placeholder:text-muted-foreground/50"
               />
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function SignupPage() {
                 placeholder="8 caractères minimum"
                 required
                 minLength={8}
-                className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all placeholder:text-muted-foreground/50"
+                className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/50 transition-all placeholder:text-muted-foreground/50"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 gradient-violet text-white font-semibold rounded-xl flex items-center justify-center gap-2 glow-violet-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full py-3 gradient-brand text-white font-semibold rounded-xl flex items-center justify-center gap-2 glow-brand-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -141,7 +141,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-5">
           Déjà un compte ?{" "}
-          <Link href="/login" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+          <Link href="/login" className="text-brand-700 hover:text-brand-400 font-medium transition-colors">
             Se connecter
           </Link>
         </p>
