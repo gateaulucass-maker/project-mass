@@ -31,6 +31,8 @@ export function usePrograms() {
       body: JSON.stringify(data),
     });
     const program = await res.json();
+    // Vérifier que la réponse est un programme valide (pas une erreur)
+    if (!program?.id) throw new Error(program?.error ?? "Erreur création programme");
     setPrograms(prev => [program, ...prev]);
     return program;
   }
