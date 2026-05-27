@@ -78,13 +78,13 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
                   Actif
                 </span>
               )}
-              {!program.is_active && isUpcoming && (
+              {!program.is_active && !isExpired && (
                 <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
                   <Clock className="w-3 h-3" />
                   À venir
                 </span>
               )}
-              {!program.is_active && !isUpcoming && (
+              {!program.is_active && isExpired && (
                 <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
                   <CheckCircle2 className="w-3 h-3" />
                   Terminé
@@ -214,7 +214,7 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
             </span>
           </div>
         )}
-        {isUpcoming && daysUntilStart !== null && (
+        {!program.is_active && !isExpired && daysUntilStart !== null && daysUntilStart > 0 && (
           <div className="flex items-center gap-1.5 mt-3">
             <Clock className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-xs font-medium text-blue-500">
