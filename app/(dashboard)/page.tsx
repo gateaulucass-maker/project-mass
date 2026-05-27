@@ -23,19 +23,12 @@ import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
 import { differenceInDays, parseISO } from "date-fns";
 import { calculateWeightProgress } from "@/lib/utils";
 
-// Mon→Push, Tue→Pull, Wed→Legs, Thu→Push, Fri→Pull, Sat→Legs, Sun→rest
-function getTodayWorkoutIndex(): number {
-  const day = new Date().getDay();
-  return day === 0 ? -1 : (day - 1) % 3;
-}
-
 export default function DashboardPage() {
   const activeProgram = MOCK_PROGRAMS.find(p => p.is_active) ?? MOCK_PROGRAMS[0];
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
 
-  const sessionsThisWeek = 4;
-  const weeklyFrequency = 5;
+  const weeklyFrequency = 3;
   const totalSessions = 47;
 
   const daysLeft = activeProgram.end_date
@@ -46,21 +39,34 @@ export default function DashboardPage() {
     ? calculateWeightProgress(currentWeight, activeProgram.start_weight, activeProgram.target_weight)
     : 0;
 
-  const todayIndex = getTodayWorkoutIndex();
-  const todayWorkout = todayIndex >= 0 ? MOCK_WORKOUTS[todayIndex] : null;
-
+  const [todayWorkout, setTodayWorkout] = useState<typeof MOCK_WORKOUTS[0] | null>(null);
   const [todayDone, setTodayDone] = useState(0);
+  const [sessionsThisWeek, setSessionsThisWeek] = useState(0);
 
   useEffect(() => {
-    if (!todayWorkout) return;
+    const day = new Date().getDay();
+    let checkedIds = new Set<string>();
     try {
-      const key = getWeekStorageKey(0);
-      const raw = localStorage.getItem(key);
-      const checked = new Set<string>(raw ? JSON.parse(raw) as string[] : []);
-      const done = todayWorkout.exercises?.filter(e => checked.has(`${todayWorkout.id}_${e.id}`)).length ?? 0;
-      setTodayDone(done);
+      const raw = localStorage.getItem(getWeekStorageKey(0));
+      checkedIds = new Set(raw ? JSON.parse(raw) as string[] : []);
     } catch {}
-  }, [todayWorkout?.id]);
+
+    // Count distinct workouts started this week
+    const startedWorkoutIds = new Set<string>();
+    for (const id of checkedIds) {
+      const wId = id.split("_")[0];
+      if (MOCK_WORKOUTS.some(w => w.id === wId)) startedWorkoutIds.add(wId);
+    }
+    setSessionsThisWeek(startedWorkoutIds.size);
+
+    if (day === 0) return; // Sunday = rest day
+
+    // Next workout in PPL rotation based on what's done this week
+    const workout = MOCK_WORKOUTS[startedWorkoutIds.size % 3];
+    setTodayWorkout(workout);
+    const done = workout.exercises?.filter(e => checkedIds.has(`${workout.id}_${e.id}`)).length ?? 0;
+    setTodayDone(done);
+  }, []);
 
   const todayTotal = todayWorkout?.exercises?.length ?? 0;
   const todayComplete = todayDone > 0 && todayDone === todayTotal;

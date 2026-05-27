@@ -83,7 +83,7 @@ export const MOCK_PROGRAMS: Program[] = [
     start_weight: 85,
     target_weight: 90,
     calories_target: 3400,
-    weekly_frequency: 5,
+    weekly_frequency: 3,
     goal: "Prise de masse — plus de volume, plus de stress musculaire, plus de masse visuelle.",
     is_active: true,
     created_at: "2026-04-01T10:00:00Z",
@@ -126,11 +126,11 @@ export const MOCK_BODYWEIGHT: BodyweightLog[] = [
 ];
 
 export const MOCK_PERSONAL_RECORDS: PersonalRecord[] = [
-  { exercise_name: "Squat", weight: 90, reps: 6, date: "2026-04-01", is_new: false },
-  { exercise_name: "Tractions / tirage vertical", weight: 66, reps: 8, date: "2026-04-14", is_new: true },
-  { exercise_name: "Rowing barre", weight: 45, reps: 8, date: "2026-05-05", is_new: true },
-  { exercise_name: "Butterfly", weight: 86, reps: 6, date: "2026-05-05", is_new: true },
+  { exercise_name: "Développé couché", weight: 100, reps: 1, date: "2026-05-20", is_new: true },
   { exercise_name: "Presse a cuisses", weight: 85, reps: 10, date: "2026-05-12", is_new: true },
+  { exercise_name: "Butterfly", weight: 86, reps: 6, date: "2026-05-05", is_new: true },
+  { exercise_name: "Rowing barre", weight: 45, reps: 8, date: "2026-05-05", is_new: true },
+  { exercise_name: "Tractions / tirage vertical", weight: 66, reps: 8, date: "2026-04-14", is_new: true },
 ];
 
 export const MOCK_WEEKLY_STATS: WeeklyStats[] = [
@@ -138,16 +138,16 @@ export const MOCK_WEEKLY_STATS: WeeklyStats[] = [
   { week: "Fev S2", sessions: 3, volume: 13100, avg_weight: 79.5 },
   { week: "Mar S1", sessions: 3, volume: 13800, avg_weight: 81.5 },
   { week: "Mar S2", sessions: 3, volume: 14200, avg_weight: 83.5 },
-  { week: "Avr S1", sessions: 4, volume: 16800, avg_weight: 85.5 },
-  { week: "Avr S2", sessions: 5, volume: 19200, avg_weight: 86.5 },
-  { week: "Mai S1", sessions: 5, volume: 20400, avg_weight: 87.9 },
+  { week: "Avr S1", sessions: 3, volume: 16800, avg_weight: 85.5 },
+  { week: "Avr S2", sessions: 3, volume: 19200, avg_weight: 86.5 },
+  { week: "Mai S1", sessions: 3, volume: 20400, avg_weight: 87.9 },
 ];
 
 export const MOCK_PERFORMANCE_DATA = [
-  { date: "Fev", squat: 70, tractions: 55, rowing: 35, militaire: 18 },
-  { date: "Mar", squat: 80, tractions: 60, rowing: 40, militaire: 20 },
-  { date: "Avr", squat: 90, tractions: 66, rowing: 45, militaire: 22 },
-  { date: "Mai", squat: 90, tractions: 66, rowing: 45, militaire: 24 },
+  { date: "Fev", squat: 70, tractions: 55, rowing: 35, militaire: 18, bench: 80 },
+  { date: "Mar", squat: 80, tractions: 60, rowing: 40, militaire: 20, bench: 90 },
+  { date: "Avr", squat: 90, tractions: 66, rowing: 45, militaire: 22, bench: 95 },
+  { date: "Mai", squat: 90, tractions: 66, rowing: 45, militaire: 24, bench: 100 },
 ];
 
 export const MOCK_AI_CONVERSATIONS: AiConversation[] = [];

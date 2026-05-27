@@ -13,6 +13,7 @@ import { MOCK_PERFORMANCE_DATA } from "@/lib/mock-data";
 
 const lines = [
   { key: "squat",     label: "Squat",              color: "#B91C1C" },
+  { key: "bench",     label: "Dév. couché",        color: "#9333EA" },
   { key: "tractions", label: "Tractions",           color: "#2563EB" },
   { key: "rowing",    label: "Rowing barre",        color: "#059669" },
   { key: "militaire", label: "Dev. militaire",      color: "#D97706" },

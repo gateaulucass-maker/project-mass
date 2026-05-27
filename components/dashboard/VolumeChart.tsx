@@ -32,7 +32,7 @@ export function VolumeChart() {
           {MOCK_WEEKLY_STATS.map((entry, index) => (
             <Cell
               key={index}
-              fill={entry.sessions === maxSessions ? "#7c3aed" : "rgba(124, 58, 237, 0.3)"}
+              fill={entry.sessions === maxSessions ? "#B91C1C" : "rgba(185,28,28,0.25)"}
             />
           ))}
         </Bar>
