@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Trophy, TrendingUp } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -15,11 +14,8 @@ export function RecentPRs({ prs }: RecentPRsProps) {
   return (
     <div className="space-y-2">
       {prs.slice(0, 5).map((pr, i) => (
-        <motion.div
+        <div
           key={`${pr.exercise_name}-${i}`}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.06 }}
           className={cn(
             "flex items-center gap-3 p-3 rounded-xl border transition-all",
             pr.is_new
@@ -56,7 +52,7 @@ export function RecentPRs({ prs }: RecentPRsProps) {
             <p className="text-sm font-bold">{pr.weight} kg</p>
             <p className="text-xs text-muted-foreground">{pr.reps} reps</p>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

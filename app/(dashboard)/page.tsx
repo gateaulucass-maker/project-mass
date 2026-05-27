@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+// motion utilisé uniquement pour la barre de progression
 import { fr } from "date-fns/locale";
 import { Dumbbell, ArrowRight, TrendingUp, Zap, CheckCircle2, ChevronRight, Flame } from "lucide-react";
 import Link from "next/link";
@@ -77,26 +78,17 @@ export default function DashboardPage() {
 
       <div className="px-4 lg:px-6 py-5 space-y-5 max-w-6xl">
         {/* Welcome */}
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start justify-between"
-        >
+        <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground capitalize">{today}</p>
             <h1 className="text-2xl font-bold mt-0.5">
               Bonjour, {MOCK_USER.full_name?.split(" ")[0]}
             </h1>
           </div>
-        </motion.div>
+        </div>
 
         {/* Programme actif banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="relative bg-card border border-brand-700/20 rounded-2xl p-5 overflow-hidden"
-        >
+        <div className="relative bg-card border border-brand-700/20 rounded-2xl p-5 overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
           <div className="h-0.5 gradient-brand absolute top-0 left-0 right-0" />
           <div className="flex items-start justify-between relative z-10">
@@ -137,7 +129,7 @@ export default function DashboardPage() {
               />
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stats */}
         <StatsCards
@@ -150,11 +142,7 @@ export default function DashboardPage() {
 
         {/* Séance du jour */}
         {todayWorkout ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-          >
+          <div>
             <Link href="/workouts">
               <div className={`bg-card border rounded-2xl p-5 hover:border-brand-700/40 transition-all group card-hover flex items-center gap-4 ${todayComplete ? "border-emerald-200" : "border-border"}`}>
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-105 ${todayComplete ? "bg-emerald-500" : "gradient-brand glow-brand-sm"}`}>
@@ -186,14 +174,9 @@ export default function DashboardPage() {
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-brand-700 group-hover:translate-x-1 transition-all flex-shrink-0" />
               </div>
             </Link>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3"
-          >
+          <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
               <Dumbbell className="w-4 h-4 text-muted-foreground" />
             </div>
@@ -201,17 +184,12 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold">Jour de repos</p>
               <p className="text-xs text-muted-foreground">Récupération — profites-en.</p>
             </div>
-          </motion.div>
+          </div>
         )}
 
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Weight Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card border border-border rounded-2xl p-5"
-          >
+          <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold">Évolution du poids</h3>
@@ -222,15 +200,10 @@ export default function DashboardPage() {
               </Link>
             </div>
             <WeightChart data={MOCK_BODYWEIGHT} />
-          </motion.div>
+          </div>
 
           {/* Volume Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="bg-card border border-border rounded-2xl p-5"
-          >
+          <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold">Fréquence d&apos;entraînement</h3>
@@ -241,16 +214,11 @@ export default function DashboardPage() {
               </Link>
             </div>
             <VolumeChart />
-          </motion.div>
+          </div>
         </div>
 
         {/* Performance Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card border border-border rounded-2xl p-5"
-        >
+        <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-brand-700" />
@@ -264,15 +232,10 @@ export default function DashboardPage() {
             </Link>
           </div>
           <PerformanceChart />
-        </motion.div>
+        </div>
 
         {/* Recent PRs */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="bg-card border border-border rounded-2xl p-5"
-        >
+        <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-brand-700" />
@@ -286,7 +249,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <RecentPRs prs={MOCK_PERSONAL_RECORDS} />
-        </motion.div>
+        </div>
       </div>
     </div>
   );

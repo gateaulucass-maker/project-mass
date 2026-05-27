@@ -273,17 +273,16 @@ export default function ProgramDetailPage() {
                 </div>
               )}
 
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {exercises.map((ex, ei) => {
                   const isEditing = editingExo === ex.id;
                   return (
                     <motion.div
                       key={ex.id}
-                      layout
-                      initial={{ opacity: 0, y: 8 }}
+                      initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ delay: ei * 0.04 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
                       className={cn(
                         "bg-card border rounded-2xl overflow-hidden transition-all",
                         isEditing ? "border-brand-700/30" : "border-border"

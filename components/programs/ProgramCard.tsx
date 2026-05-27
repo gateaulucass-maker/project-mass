@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // gardé pour la barre de progression
 import { Calendar, MoreHorizontal, CheckCircle2, Trash2, Play, Edit2, Dumbbell, Flame, Clock } from "lucide-react";
 import { format, parseISO, differenceInWeeks, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -51,10 +51,7 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
   const workoutCount = program.workouts?.length ?? 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07 }}
+    <div
       className={cn(
         "bg-card border rounded-2xl overflow-hidden transition-all",
         program.is_active
@@ -223,6 +220,6 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

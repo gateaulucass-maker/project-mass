@@ -26,8 +26,11 @@ export function useLocalPrograms() {
     setReady(true);
   }, []);
 
-  // Tous les programmes : mock (lecture seule) + créés par l'utilisateur
-  const allPrograms: Program[] = [...MOCK_PROGRAMS, ...custom];
+  // Stable reference — évite de recalculer activeProgram à chaque render
+  const allPrograms = useMemo(
+    () => [...MOCK_PROGRAMS, ...custom] as Program[],
+    [custom],
+  );
 
   // Programme actif calculé par la date : si un programme couvre aujourd'hui, il prime sur is_active
   const activeProgram = useMemo(() => {

@@ -106,11 +106,8 @@ export default function WorkoutsPage() {
           const pct = exercises.length > 0 ? (doneCount / exercises.length) * 100 : 0;
 
           return (
-            <motion.div
+            <div
               key={workout.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: wi * 0.08 }}
               className={`bg-card border rounded-2xl overflow-hidden ${isToday ? "border-brand-700/30 shadow-[0_0_20px_rgba(185,28,28,0.07)]" : "border-border"}`}
             >
               {isToday && <div className="h-0.5 gradient-brand w-full" />}
@@ -243,7 +240,7 @@ export default function WorkoutsPage() {
                   className={`h-full ${allDone ? "bg-emerald-500" : "bg-brand-700"}`}
                 />
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Scale, TrendingUp, Calendar, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,14 +14,9 @@ interface StatCardProps {
   index: number;
 }
 
-function StatCard({ label, value, subValue, icon: Icon, color, change, changeUp, index }: StatCardProps) {
+function StatCard({ label, value, subValue, icon: Icon, color, change, changeUp }: StatCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="bg-card border border-border rounded-2xl p-5 card-hover relative overflow-hidden group"
-    >
+    <div className="bg-card border border-border rounded-2xl p-5 card-hover relative overflow-hidden group">
       <div className={cn("absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-15 group-hover:opacity-25 transition-opacity", color)} />
 
       <div className="flex items-start justify-between mb-3">
@@ -45,7 +39,7 @@ function StatCard({ label, value, subValue, icon: Icon, color, change, changeUp,
         {subValue && <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>}
         <p className="text-xs text-muted-foreground mt-1">{label}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
