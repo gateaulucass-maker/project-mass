@@ -10,15 +10,14 @@ import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { WeightChart } from "@/components/dashboard/WeightChart";
 import { SkeletonCard } from "@/components/shared/LoadingSpinner";
-import { useBodyweight } from "@/hooks/useBodyweight";
-import { usePrograms } from "@/hooks/usePrograms";
+import { useLocalBodyweight } from "@/hooks/useLocalBodyweight";
+import { useLocalPrograms } from "@/hooks/useLocalPrograms";
 
 export default function WeightPage() {
-  const { logs, loading, addWeight } = useBodyweight();
-  const { activeProgram } = usePrograms();
+  const { logs, loading, addWeight } = useLocalBodyweight();
+  const { activeProgram } = useLocalPrograms();
   const [newWeight, setNewWeight] = useState("");
   const [adding, setAdding] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   const latest = logs[logs.length - 1];
   const firstLog = logs[0];
@@ -35,20 +34,14 @@ export default function WeightPage() {
     ? thisWeek.reduce((s, l) => s + l.weight, 0) / thisWeek.length
     : latest?.weight ?? 0;
 
-  async function handleAdd(e: React.FormEvent) {
+  function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     const w = parseFloat(newWeight);
     if (!w || w < 30 || w > 300) { toast.error("Poids invalide"); return; }
-    setSaving(true);
-    const result = await addWeight(w);
-    setSaving(false);
-    if (result) {
-      setNewWeight("");
-      setAdding(false);
-      toast.success(`${w} kg enregistré ✓`);
-    } else {
-      toast.error("Impossible d'enregistrer le poids");
-    }
+    addWeight(w);
+    setNewWeight("");
+    setAdding(false);
+    toast.success(`${w} kg enregistré ✓`);
   }
 
   if (loading) return (
@@ -114,10 +107,9 @@ export default function WeightPage() {
               />
               <button
                 type="submit"
-                disabled={saving}
-                className="px-5 py-2.5 gradient-brand text-white font-semibold rounded-xl text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                className="px-5 py-2.5 gradient-brand text-white font-semibold rounded-xl text-sm hover:opacity-90 active:scale-95 transition-all"
               >
-                {saving ? "..." : "Enregistrer"}
+                Enregistrer
               </button>
             </motion.form>
           )}
@@ -157,7 +149,7 @@ export default function WeightPage() {
             <div className="flex justify-between text-sm mb-2">
               <span className="text-muted-foreground">Progression vers l&apos;objectif</span>
               <span className="font-semibold text-brand-700">
-                {Math.round(((latest.weight - activeProgram.start_weight) / (activeProgram.target_weight - activeProgram.start_weight)) * 100)}%
+                {Math.round(Math.min(100, Math.max(0, ((latest.weight - activeProgram.start_weight) / (activeProgram.target_weight - activeProgram.start_weight)) * 100)))}%
               </span>
             </div>
             <div className="h-3 bg-secondary rounded-full overflow-hidden">

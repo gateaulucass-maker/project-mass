@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, ChevronLeft, ChevronRight, Check, Pencil, X } from "lucide-react";
+import { Dumbbell, ChevronLeft, ChevronRight, Check, Pencil, X, Play } from "lucide-react";
 import { format, startOfWeek, addWeeks, getISOWeek } from "date-fns";
 import { fr } from "date-fns/locale";
+import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { MOCK_WORKOUTS } from "@/lib/mock-data";
@@ -153,9 +154,19 @@ export default function WorkoutsPage() {
                   </div>
                   <p className="font-bold text-sm leading-tight">{workout.title}</p>
                 </div>
-                <span className="text-xs text-muted-foreground font-semibold tabular-nums">
-                  {doneCount}/{exercises.length}
-                </span>
+                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                  <span className="text-xs text-muted-foreground font-semibold tabular-nums">
+                    {doneCount}/{exercises.length}
+                  </span>
+                  {isToday && !allDone && weekOffset === 0 && (
+                    <Link href={`/workouts/active?workout=${workout.id}`}>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 gradient-brand text-white text-xs font-bold rounded-lg active:scale-95 transition-all glow-brand-sm">
+                        <Play className="w-3 h-3" />
+                        Démarrer
+                      </button>
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* Exercise rows */}

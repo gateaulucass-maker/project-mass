@@ -14,23 +14,23 @@ import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { RecentPRs } from "@/components/dashboard/RecentPRs";
 import {
-  MOCK_BODYWEIGHT,
   MOCK_PERSONAL_RECORDS,
   MOCK_WORKOUTS,
   MOCK_USER,
 } from "@/lib/mock-data";
 import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
 import { useLocalPrograms } from "@/hooks/useLocalPrograms";
+import { useLocalBodyweight } from "@/hooks/useLocalBodyweight";
 import { differenceInDays, parseISO } from "date-fns";
 import { calculateWeightProgress } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { activeProgram } = useLocalPrograms();
-  const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
+  const { logs: weightLogs } = useLocalBodyweight();
+  const currentWeight = weightLogs.length > 0 ? weightLogs[weightLogs.length - 1].weight : 0;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
 
   const weeklyFrequency = activeProgram?.weekly_frequency ?? 3;
-  const totalSessions = 47;
 
   const daysLeft = activeProgram?.end_date
     ? differenceInDays(parseISO(activeProgram.end_date), new Date())
@@ -43,6 +43,8 @@ export default function DashboardPage() {
   const [todayWorkout, setTodayWorkout] = useState<typeof MOCK_WORKOUTS[0] | null>(null);
   const [todayDone, setTodayDone] = useState(0);
   const [sessionsThisWeek, setSessionsThisWeek] = useState(0);
+  const [totalSessions, setTotalSessions] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     function compute() {
@@ -67,6 +69,33 @@ export default function DashboardPage() {
       const thisWeekChecks = parseChecks(getWeekStorageKey(0));
       const thisWeekDone   = doneWorkouts(thisWeekChecks);
       setSessionsThisWeek(thisWeekDone.size);
+
+      // Total sessions across all weeks
+      let total = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k?.startsWith("pm_checks_")) continue;
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) continue;
+          const checks: string[] = JSON.parse(raw);
+          total += new Set(checks.map(id => id.split("_")[0]).filter(wId => MOCK_WORKOUTS.some(w => w.id === wId))).size;
+        } catch {}
+      }
+      setTotalSessions(total);
+
+      // Weekly streak (semaines consécutives avec ≥ 1 séance)
+      let s = 0;
+      for (let offset = 0; offset >= -52; offset--) {
+        try {
+          const raw = localStorage.getItem(getWeekStorageKey(offset));
+          const checks: string[] = raw ? JSON.parse(raw) : [];
+          const hasDone = checks.some(id => MOCK_WORKOUTS.some(w => w.id === id.split("_")[0]));
+          if (hasDone) s++;
+          else if (offset < 0) break;
+        } catch { break; }
+      }
+      setStreak(s);
 
       if (day === 0) return;
 
@@ -116,6 +145,12 @@ export default function DashboardPage() {
               Bonjour, {MOCK_USER.full_name?.split(" ")[0]}
             </h1>
           </div>
+          {streak > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-full mt-1">
+              <Flame className="w-3.5 h-3.5 text-orange-500" />
+              <span className="text-xs font-bold text-orange-600">{streak} sem.</span>
+            </div>
+          )}
         </div>
 
         {/* Programme actif banner */}
@@ -234,7 +269,7 @@ export default function DashboardPage() {
                 Voir tout <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
-            <WeightChart data={MOCK_BODYWEIGHT} />
+            <WeightChart data={weightLogs} />
           </div>
 
           {/* Volume Chart */}
