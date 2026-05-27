@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, MoreHorizontal, CheckCircle2, Trash2, Play, Edit2, Dumbbell, Flame } from "lucide-react";
+import { Calendar, MoreHorizontal, CheckCircle2, Trash2, Play, Edit2, Dumbbell, Flame, Clock } from "lucide-react";
 import { format, parseISO, differenceInWeeks, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useState } from "react";
@@ -20,8 +20,15 @@ interface ProgramCardProps {
 export function ProgramCard({ program, index, currentWeight, onActivate, onDelete }: ProgramCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const todayStr = new Date().toISOString().split("T")[0];
+  const isUpcoming = program.start_date > todayStr;
+  const isExpired  = !!program.end_date && program.end_date < todayStr;
+
   const daysLeft = program.end_date
     ? differenceInDays(parseISO(program.end_date), new Date())
+    : null;
+  const daysUntilStart = isUpcoming
+    ? differenceInDays(parseISO(program.start_date), new Date())
     : null;
 
   const durationWeeks = program.end_date
@@ -71,7 +78,13 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
                   Actif
                 </span>
               )}
-              {!program.is_active && (
+              {!program.is_active && isUpcoming && (
+                <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                  <Clock className="w-3 h-3" />
+                  À venir
+                </span>
+              )}
+              {!program.is_active && !isUpcoming && (
                 <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
                   <CheckCircle2 className="w-3 h-3" />
                   Terminé
@@ -192,15 +205,20 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
           </p>
         )}
 
-        {/* Days left (active only) */}
+        {/* Days left (active) / days until start (upcoming) */}
         {program.is_active && daysLeft !== null && daysLeft > 0 && (
           <div className="flex items-center gap-1.5 mt-3">
             <Flame className="w-3.5 h-3.5 text-orange-400" />
-            <span className={cn(
-              "text-xs font-medium",
-              daysLeft < 14 ? "text-orange-400" : "text-muted-foreground"
-            )}>
+            <span className={cn("text-xs font-medium", daysLeft < 14 ? "text-orange-400" : "text-muted-foreground")}>
               {daysLeft} jours restants
+            </span>
+          </div>
+        )}
+        {isUpcoming && daysUntilStart !== null && (
+          <div className="flex items-center gap-1.5 mt-3">
+            <Clock className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-xs font-medium text-blue-500">
+              Démarre dans {daysUntilStart} jour{daysUntilStart > 1 ? "s" : ""}
             </span>
           </div>
         )}
