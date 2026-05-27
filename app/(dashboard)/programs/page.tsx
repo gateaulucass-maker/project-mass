@@ -13,12 +13,11 @@ import { MOCK_BODYWEIGHT } from "@/lib/mock-data";
 
 export default function ProgramsPage() {
   const router = useRouter();
-  const { allPrograms, ready, addProgram, removeProgram } = useLocalPrograms();
+  const { allPrograms, activeProgram, ready, addProgram, removeProgram } = useLocalPrograms();
   const [modalOpen, setModalOpen] = useState(false);
 
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
-  const activeProgram = allPrograms.find(p => p.is_active);
-  const otherPrograms = allPrograms.filter(p => !p.is_active);
+  const otherPrograms = allPrograms.filter(p => p.id !== activeProgram?.id);
 
   async function handleCreate(data: ProgramFormData) {
     const p = addProgram({ ...data, is_active: false });

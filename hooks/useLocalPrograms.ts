@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Program, Workout, Exercise, WorkoutType, MuscleGroup } from "@/types";
 import { MOCK_PROGRAMS } from "@/lib/mock-data";
 
@@ -28,6 +28,23 @@ export function useLocalPrograms() {
 
   // Tous les programmes : mock (lecture seule) + créés par l'utilisateur
   const allPrograms: Program[] = [...MOCK_PROGRAMS, ...custom];
+
+  // Programme actif calculé par la date : si un programme couvre aujourd'hui, il prime sur is_active
+  const activeProgram = useMemo(() => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const covering = allPrograms.filter(p => {
+      const started = p.start_date <= todayStr;
+      const ongoing = !p.end_date || p.end_date >= todayStr;
+      return started && ongoing;
+    });
+    if (covering.length > 0) {
+      return (
+        covering.find(p => p.is_active) ??
+        [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0]
+      );
+    }
+    return allPrograms.find(p => p.is_active) ?? allPrograms[0];
+  }, [allPrograms]);
 
   function getById(id: string): Program | undefined {
     return allPrograms.find(p => p.id === id);
@@ -111,6 +128,23 @@ export function useLocalPrograms() {
     saveCustom(next);
   }
 
+  function updateExercise(
+    programId: string,
+    workoutId: string,
+    exerciseId: string,
+    updates: Partial<Pick<Exercise, "sets" | "reps" | "weight" | "rest_time">>,
+  ) {
+    const next = custom.map(p => p.id !== programId ? p : {
+      ...p,
+      workouts: (p.workouts ?? []).map(w => w.id !== workoutId ? w : {
+        ...w,
+        exercises: (w.exercises ?? []).map(e => e.id !== exerciseId ? e : { ...e, ...updates }),
+      }),
+    });
+    setCustom(next);
+    saveCustom(next);
+  }
+
   function removeExercise(programId: string, workoutId: string, exerciseId: string) {
     const next = custom.map(p => p.id !== programId ? p : {
       ...p,
@@ -127,6 +161,7 @@ export function useLocalPrograms() {
 
   return {
     allPrograms,
+    activeProgram,
     custom,
     ready,
     getById,
@@ -136,6 +171,7 @@ export function useLocalPrograms() {
     addWorkout,
     removeWorkout,
     addExercise,
+    updateExercise,
     removeExercise,
   };
 }
