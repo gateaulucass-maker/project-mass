@@ -22,8 +22,23 @@ export function useLocalPrograms() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setCustom(loadCustom());
-    setReady(true);
+    function load() {
+      setCustom(loadCustom());
+      setReady(true);
+    }
+    load();
+    function onStorage(e: StorageEvent) {
+      if (e.key === KEY) load();
+    }
+    function onVisible() {
+      if (document.visibilityState === "visible") load();
+    }
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   // Stable reference — évite de recalculer activeProgram à chaque render

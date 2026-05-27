@@ -14,29 +14,29 @@ import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { RecentPRs } from "@/components/dashboard/RecentPRs";
 import {
-  MOCK_PROGRAMS,
   MOCK_BODYWEIGHT,
   MOCK_PERSONAL_RECORDS,
   MOCK_WORKOUTS,
   MOCK_USER,
 } from "@/lib/mock-data";
 import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+import { useLocalPrograms } from "@/hooks/useLocalPrograms";
 import { differenceInDays, parseISO } from "date-fns";
 import { calculateWeightProgress } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const activeProgram = MOCK_PROGRAMS.find(p => p.is_active) ?? MOCK_PROGRAMS[0];
+  const { activeProgram } = useLocalPrograms();
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
 
-  const weeklyFrequency = 3;
+  const weeklyFrequency = activeProgram?.weekly_frequency ?? 3;
   const totalSessions = 47;
 
-  const daysLeft = activeProgram.end_date
+  const daysLeft = activeProgram?.end_date
     ? differenceInDays(parseISO(activeProgram.end_date), new Date())
     : null;
 
-  const weightProgress = activeProgram.start_weight && activeProgram.target_weight
+  const weightProgress = activeProgram?.start_weight && activeProgram?.target_weight
     ? calculateWeightProgress(currentWeight, activeProgram.start_weight, activeProgram.target_weight)
     : 0;
 
@@ -119,6 +119,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Programme actif banner */}
+        {activeProgram && (
         <div className="relative bg-card border border-brand-700/20 rounded-2xl p-5 overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
           <div className="h-0.5 gradient-brand absolute top-0 left-0 right-0" />
@@ -138,13 +139,14 @@ export default function DashboardPage() {
               </div>
               <h2 className="text-lg font-bold">{activeProgram.title}</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Objectif : {activeProgram.target_weight} kg · {currentWeight} kg actuellement
+                {activeProgram.target_weight ? `Objectif : ${activeProgram.target_weight} kg · ` : ""}{currentWeight} kg actuellement
               </p>
             </div>
             <Link href="/programs">
               <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-brand-700 transition-colors mt-1" />
             </Link>
           </div>
+          {activeProgram.start_weight && activeProgram.target_weight && (
           <div className="mt-4 relative z-10">
             <div className="flex items-center justify-between text-xs mb-1.5">
               <span className="text-muted-foreground">{activeProgram.start_weight} kg</span>
@@ -160,12 +162,14 @@ export default function DashboardPage() {
               />
             </div>
           </div>
+          )}
         </div>
+        )}
 
         {/* Stats */}
         <StatsCards
           currentWeight={currentWeight}
-          targetWeight={90}
+          targetWeight={activeProgram?.target_weight ?? 90}
           sessionsThisWeek={sessionsThisWeek}
           weeklyFrequency={weeklyFrequency}
           totalSessions={totalSessions}
