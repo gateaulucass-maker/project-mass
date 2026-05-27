@@ -45,43 +45,59 @@ export default function DashboardPage() {
   const [sessionsThisWeek, setSessionsThisWeek] = useState(0);
 
   useEffect(() => {
-    const day = new Date().getDay();
+    function compute() {
+      const day = new Date().getDay();
 
-    function parseChecks(key: string): Set<string> {
-      try {
-        const raw = localStorage.getItem(key);
-        return new Set(raw ? JSON.parse(raw) as string[] : []);
-      } catch { return new Set(); }
-    }
-
-    function doneWorkouts(checks: Set<string>): Set<string> {
-      const ids = new Set<string>();
-      for (const id of checks) {
-        const wId = id.split("_")[0];
-        if (MOCK_WORKOUTS.some(w => w.id === wId)) ids.add(wId);
+      function parseChecks(key: string): Set<string> {
+        try {
+          const raw = localStorage.getItem(key);
+          return new Set(raw ? JSON.parse(raw) as string[] : []);
+        } catch { return new Set(); }
       }
-      return ids;
+
+      function doneWorkouts(checks: Set<string>): Set<string> {
+        const ids = new Set<string>();
+        for (const id of checks) {
+          const wId = id.split("_")[0];
+          if (MOCK_WORKOUTS.some(w => w.id === wId)) ids.add(wId);
+        }
+        return ids;
+      }
+
+      const thisWeekChecks = parseChecks(getWeekStorageKey(0));
+      const thisWeekDone   = doneWorkouts(thisWeekChecks);
+      setSessionsThisWeek(thisWeekDone.size);
+
+      if (day === 0) return;
+
+      let nextIndex = 0;
+      if (thisWeekDone.size > 0) {
+        nextIndex = thisWeekDone.size % 3;
+      } else {
+        const prevDone = doneWorkouts(parseChecks(getWeekStorageKey(-1)));
+        nextIndex = prevDone.size % 3;
+      }
+
+      const workout = MOCK_WORKOUTS[nextIndex];
+      setTodayWorkout(workout);
+      const done = workout.exercises?.filter(e => thisWeekChecks.has(`${workout.id}_${e.id}`)).length ?? 0;
+      setTodayDone(done);
     }
 
-    const thisWeekChecks = parseChecks(getWeekStorageKey(0));
-    const thisWeekDone   = doneWorkouts(thisWeekChecks);
-    setSessionsThisWeek(thisWeekDone.size);
+    compute();
 
-    if (day === 0) return; // Sunday = rest
-
-    // Rotation cross-semaine : si rien fait cette semaine, on continue depuis la semaine précédente
-    let nextIndex = 0;
-    if (thisWeekDone.size > 0) {
-      nextIndex = thisWeekDone.size % 3;
-    } else {
-      const prevDone = doneWorkouts(parseChecks(getWeekStorageKey(-1)));
-      nextIndex = prevDone.size % 3;
+    function onStorage(e: StorageEvent) {
+      if (e.key?.startsWith("pm_checks_")) compute();
     }
-
-    const workout = MOCK_WORKOUTS[nextIndex];
-    setTodayWorkout(workout);
-    const done = workout.exercises?.filter(e => thisWeekChecks.has(`${workout.id}_${e.id}`)).length ?? 0;
-    setTodayDone(done);
+    function onVisible() {
+      if (document.visibilityState === "visible") compute();
+    }
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const todayTotal = todayWorkout?.exercises?.length ?? 0;

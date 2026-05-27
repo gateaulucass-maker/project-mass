@@ -13,12 +13,27 @@ export function useWorkoutChecks(weekOffset: number) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      setChecked(new Set(raw ? (JSON.parse(raw) as string[]) : []));
-    } catch {
-      setChecked(new Set());
+    function read() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        setChecked(new Set(raw ? (JSON.parse(raw) as string[]) : []));
+      } catch {
+        setChecked(new Set());
+      }
     }
+    read();
+    function onStorage(e: StorageEvent) {
+      if (e.key === storageKey) read();
+    }
+    function onVisible() {
+      if (document.visibilityState === "visible") read();
+    }
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [storageKey]);
 
   const toggle = useCallback((id: string) => {

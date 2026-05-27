@@ -9,14 +9,7 @@ import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { MOCK_WORKOUTS } from "@/lib/mock-data";
 import { getWorkoutTypeLabel } from "@/lib/utils";
-import { useWorkoutChecks } from "@/hooks/useWorkoutChecks";
-
-// Mon→Push, Tue→Pull, Wed→Legs, Thu→Push, Fri→Pull, Sat→Legs, Sun→rest
-function getTodayWorkoutId(): string | null {
-  const day = new Date().getDay();
-  if (day === 0) return null;
-  return MOCK_WORKOUTS[(day - 1) % 3]?.id ?? null;
-}
+import { useWorkoutChecks, getWeekStorageKey } from "@/hooks/useWorkoutChecks";
 
 interface ExerciseOverride {
   weight?: number;
@@ -28,6 +21,35 @@ const OVERRIDES_KEY = "pm_exercise_overrides";
 export default function WorkoutsPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { checked, toggle } = useWorkoutChecks(weekOffset);
+  const [todayWorkoutId, setTodayWorkoutId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (weekOffset !== 0) { setTodayWorkoutId(null); return; }
+    const day = new Date().getDay();
+    if (day === 0) { setTodayWorkoutId(null); return; }
+
+    function doneFromChecks(checks: Set<string>): Set<string> {
+      const ids = new Set<string>();
+      for (const id of checks) {
+        const wId = id.split("_")[0];
+        if (MOCK_WORKOUTS.some(w => w.id === wId)) ids.add(wId);
+      }
+      return ids;
+    }
+
+    const thisWeekDone = doneFromChecks(checked);
+    let nextIndex = 0;
+    if (thisWeekDone.size > 0) {
+      nextIndex = thisWeekDone.size % 3;
+    } else {
+      try {
+        const raw = localStorage.getItem(getWeekStorageKey(-1));
+        const prevChecks = new Set<string>(raw ? JSON.parse(raw) as string[] : []);
+        nextIndex = doneFromChecks(prevChecks).size % 3;
+      } catch {}
+    }
+    setTodayWorkoutId(MOCK_WORKOUTS[nextIndex]?.id ?? null);
+  }, [weekOffset, checked]);
 
   const [overrides, setOverrides] = useState<Record<string, ExerciseOverride>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -61,7 +83,6 @@ export default function WorkoutsPage() {
   const baseDate = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const weekNum = getISOWeek(baseDate);
   const monthLabel = format(baseDate, "MMMM yyyy", { locale: fr });
-  const todayWorkoutId = weekOffset === 0 ? getTodayWorkoutId() : null;
 
   return (
     <div className="flex-1">
