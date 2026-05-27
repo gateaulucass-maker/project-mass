@@ -151,23 +151,23 @@ export default function WorkoutsPage() {
                   return (
                     <div key={exercise.id}>
                       {/* Main row */}
-                      <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-secondary/20 transition-colors">
-                        {/* Checkbox */}
+                      <div className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${done ? "bg-emerald-50/50" : "hover:bg-secondary/20"}`}>
+                        {/* Checkbox — taille augmentée pour le tactile */}
                         <button
                           onClick={() => toggle(id)}
-                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            done ? "bg-brand-700 border-brand-700" : "border-border bg-white"
+                          className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-95 ${
+                            done ? "bg-emerald-500 border-emerald-500" : "border-border bg-white"
                           }`}
                         >
-                          {done && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                          {done && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                         </button>
 
-                        {/* Info — click to edit */}
+                        {/* Info */}
                         <button
                           onClick={() => isEditing ? setEditingId(null) : openEdit(exercise.id, exercise.weight, exercise.reps)}
                           className="flex-1 min-w-0 text-left"
                         >
-                          <p className={`text-sm font-medium leading-tight ${done ? "text-muted-foreground line-through" : ""}`}>
+                          <p className={`text-sm font-medium leading-tight ${done ? "text-emerald-700 line-through decoration-emerald-400" : ""}`}>
                             {exercise.name}
                             {hasOverride && <span className="ml-1.5 text-[10px] font-bold text-brand-700">modifié</span>}
                           </p>
@@ -180,7 +180,7 @@ export default function WorkoutsPage() {
                         {/* Edit toggle */}
                         <button
                           onClick={() => isEditing ? setEditingId(null) : openEdit(exercise.id, exercise.weight, exercise.reps)}
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${isEditing ? "bg-brand-50 text-brand-700" : "text-muted-foreground/50 hover:text-muted-foreground"}`}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${isEditing ? "bg-brand-50 text-brand-700" : "text-muted-foreground/50 hover:text-muted-foreground"}`}
                         >
                           {isEditing ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
                         </button>

@@ -46,26 +46,41 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const day = new Date().getDay();
-    let checkedIds = new Set<string>();
-    try {
-      const raw = localStorage.getItem(getWeekStorageKey(0));
-      checkedIds = new Set(raw ? JSON.parse(raw) as string[] : []);
-    } catch {}
 
-    // Count distinct workouts started this week
-    const startedWorkoutIds = new Set<string>();
-    for (const id of checkedIds) {
-      const wId = id.split("_")[0];
-      if (MOCK_WORKOUTS.some(w => w.id === wId)) startedWorkoutIds.add(wId);
+    function parseChecks(key: string): Set<string> {
+      try {
+        const raw = localStorage.getItem(key);
+        return new Set(raw ? JSON.parse(raw) as string[] : []);
+      } catch { return new Set(); }
     }
-    setSessionsThisWeek(startedWorkoutIds.size);
 
-    if (day === 0) return; // Sunday = rest day
+    function doneWorkouts(checks: Set<string>): Set<string> {
+      const ids = new Set<string>();
+      for (const id of checks) {
+        const wId = id.split("_")[0];
+        if (MOCK_WORKOUTS.some(w => w.id === wId)) ids.add(wId);
+      }
+      return ids;
+    }
 
-    // Next workout in PPL rotation based on what's done this week
-    const workout = MOCK_WORKOUTS[startedWorkoutIds.size % 3];
+    const thisWeekChecks = parseChecks(getWeekStorageKey(0));
+    const thisWeekDone   = doneWorkouts(thisWeekChecks);
+    setSessionsThisWeek(thisWeekDone.size);
+
+    if (day === 0) return; // Sunday = rest
+
+    // Rotation cross-semaine : si rien fait cette semaine, on continue depuis la semaine précédente
+    let nextIndex = 0;
+    if (thisWeekDone.size > 0) {
+      nextIndex = thisWeekDone.size % 3;
+    } else {
+      const prevDone = doneWorkouts(parseChecks(getWeekStorageKey(-1)));
+      nextIndex = prevDone.size % 3;
+    }
+
+    const workout = MOCK_WORKOUTS[nextIndex];
     setTodayWorkout(workout);
-    const done = workout.exercises?.filter(e => checkedIds.has(`${workout.id}_${e.id}`)).length ?? 0;
+    const done = workout.exercises?.filter(e => thisWeekChecks.has(`${workout.id}_${e.id}`)).length ?? 0;
     setTodayDone(done);
   }, []);
 
