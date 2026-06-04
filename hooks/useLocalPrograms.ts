@@ -55,11 +55,28 @@ export function useLocalPrograms() {
     [custom],
   );
 
-  // Un programme custom explicitement activé prend TOUJOURS le dessus sur les mocks
   const activeProgram = useMemo(() => {
+    // 1. Programme custom explicitement activé → priorité absolue
     const explicitCustom = custom.find(p => p.is_active);
     if (explicitCustom) return explicitCustom;
 
+    // 2. Si l'utilisateur a des programmes custom, prendre le plus récent automatiquement
+    //    (évite que PPL expiré reste affiché quand Summer Body existe)
+    if (custom.length > 0) {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const covering = custom.filter(p => {
+        const started = p.start_date <= todayStr;
+        const ongoing = !p.end_date || p.end_date >= todayStr;
+        return started && ongoing;
+      });
+      if (covering.length > 0) {
+        return [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+      }
+      // Aucun custom ne couvre aujourd'hui → le plus récent quand même
+      return [...custom].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    }
+
+    // 3. Fallback mocks — programmes dont la date couvre aujourd'hui
     const todayStr = new Date().toISOString().split("T")[0];
     const covering = allPrograms.filter(p => {
       const started = p.start_date <= todayStr;
@@ -67,10 +84,8 @@ export function useLocalPrograms() {
       return started && ongoing;
     });
     if (covering.length > 0) {
-      return (
-        covering.find(p => p.is_active) ??
-        [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0]
-      );
+      return covering.find(p => p.is_active) ??
+        [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
     }
     return allPrograms.find(p => p.is_active) ?? allPrograms[0];
   }, [allPrograms, custom]);
