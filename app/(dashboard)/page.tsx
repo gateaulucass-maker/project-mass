@@ -59,20 +59,19 @@ export default function DashboardPage() {
         } catch { return new Set(); }
       }
 
-      function doneWorkouts(checks: Set<string>): Set<string> {
+      // Compte les workouts distincts cochés — SANS filtrer par programme
+      // évite les incohérences quand on change de programme en cours de semaine
+      function countDone(checks: Set<string>): number {
         const ids = new Set<string>();
-        for (const id of checks) {
-          const wId = id.split("_")[0];
-          if (workouts.some(w => w.id === wId)) ids.add(wId);
-        }
-        return ids;
+        for (const id of checks) ids.add(id.split("_")[0]);
+        return ids.size;
       }
 
       const thisWeekChecks = parseChecks(getWeekStorageKey(0));
-      const thisWeekDone   = doneWorkouts(thisWeekChecks);
-      setSessionsThisWeek(thisWeekDone.size);
+      const doneThisWeek = countDone(thisWeekChecks);
+      setSessionsThisWeek(doneThisWeek);
 
-      // Total sessions : compte toutes les clés pm_checks_ sans filtre par programme
+      // Total sessions : toutes les semaines
       let total = 0;
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -86,13 +85,12 @@ export default function DashboardPage() {
       }
       setTotalSessions(total);
 
-      // Streak hebdomadaire — une semaine non vide compte
+      // Streak hebdomadaire
       let s = 0;
       for (let offset = 0; offset >= -52; offset--) {
         try {
           const raw = localStorage.getItem(getWeekStorageKey(offset));
-          const checks: string[] = raw ? JSON.parse(raw) : [];
-          const hasDone = checks.length > 0;
+          const hasDone = raw ? (JSON.parse(raw) as string[]).length > 0 : false;
           if (hasDone) s++;
           else if (offset < 0) break;
         } catch { break; }
@@ -102,13 +100,9 @@ export default function DashboardPage() {
       if (day === 0) return;
 
       const n = workouts.length || 1;
-      let nextIndex = 0;
-      if (thisWeekDone.size > 0) {
-        nextIndex = thisWeekDone.size % n;
-      } else {
-        const prevDone = doneWorkouts(parseChecks(getWeekStorageKey(-1)));
-        nextIndex = prevDone.size % n;
-      }
+      // Rotation : doneThisWeek % n → prochain workout dans la liste
+      const prevDone = doneThisWeek === 0 ? countDone(parseChecks(getWeekStorageKey(-1))) : 0;
+      const nextIndex = doneThisWeek > 0 ? doneThisWeek % n : prevDone % n;
 
       const workout = workouts[nextIndex];
       if (!workout) return;
@@ -209,6 +203,7 @@ export default function DashboardPage() {
         <StatsCards
           currentWeight={currentWeight}
           targetWeight={activeProgram?.target_weight ?? 90}
+          startWeight={activeProgram?.start_weight ?? weightLogs[0]?.weight}
           sessionsThisWeek={sessionsThisWeek}
           weeklyFrequency={weeklyFrequency}
           totalSessions={totalSessions}

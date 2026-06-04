@@ -46,13 +46,14 @@ function StatCard({ label, value, subValue, icon: Icon, color, change, changeUp 
 interface StatsCardsProps {
   currentWeight: number;
   targetWeight: number;
+  startWeight?: number;
   sessionsThisWeek: number;
   weeklyFrequency: number;
   totalSessions: number;
 }
 
-export function StatsCards({ currentWeight, targetWeight, sessionsThisWeek, weeklyFrequency, totalSessions }: StatsCardsProps) {
-  const weightDiff = (currentWeight - 78).toFixed(1);
+export function StatsCards({ currentWeight, targetWeight, startWeight = 78, sessionsThisWeek, weeklyFrequency, totalSessions }: StatsCardsProps) {
+  const weightDiff = (currentWeight - startWeight).toFixed(1);
 
   const stats: StatCardProps[] = [
     {

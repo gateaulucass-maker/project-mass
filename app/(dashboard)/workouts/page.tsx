@@ -35,25 +35,22 @@ export default function WorkoutsPage() {
     const day = new Date().getDay();
     if (day === 0) { setTodayWorkoutId(null); return; }
 
-    function doneFromChecks(checks: Set<string>): Set<string> {
+    function countDone(checks: Set<string>): number {
       const ids = new Set<string>();
-      for (const id of checks) {
-        const wId = id.split("_")[0];
-        if (workouts.some(w => w.id === wId)) ids.add(wId);
-      }
-      return ids;
+      for (const id of checks) ids.add(id.split("_")[0]);
+      return ids.size;
     }
 
-    const thisWeekDone = doneFromChecks(checked);
+    const doneThisWeek = countDone(checked);
     const n = workouts.length || 1;
     let nextIndex = 0;
-    if (thisWeekDone.size > 0) {
-      nextIndex = thisWeekDone.size % n;
+    if (doneThisWeek > 0) {
+      nextIndex = doneThisWeek % n;
     } else {
       try {
         const raw = localStorage.getItem(getWeekStorageKey(-1));
         const prevChecks = new Set<string>(raw ? JSON.parse(raw) as string[] : []);
-        nextIndex = doneFromChecks(prevChecks).size % n;
+        nextIndex = countDone(prevChecks) % n;
       } catch {}
     }
     setTodayWorkoutId(workouts[nextIndex]?.id ?? null);
