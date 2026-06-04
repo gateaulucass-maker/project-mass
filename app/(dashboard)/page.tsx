@@ -40,13 +40,15 @@ export default function DashboardPage() {
     ? calculateWeightProgress(currentWeight, activeProgram.start_weight, activeProgram.target_weight)
     : 0;
 
-  const [todayWorkout, setTodayWorkout] = useState<typeof MOCK_WORKOUTS[0] | null>(null);
+  const [todayWorkout, setTodayWorkout] = useState<(typeof MOCK_WORKOUTS)[0] | null>(null);
   const [todayDone, setTodayDone] = useState(0);
   const [sessionsThisWeek, setSessionsThisWeek] = useState(0);
   const [totalSessions, setTotalSessions] = useState(0);
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
+    const workouts = activeProgram?.workouts?.length ? activeProgram.workouts : MOCK_WORKOUTS;
+
     function compute() {
       const day = new Date().getDay();
 
@@ -61,7 +63,7 @@ export default function DashboardPage() {
         const ids = new Set<string>();
         for (const id of checks) {
           const wId = id.split("_")[0];
-          if (MOCK_WORKOUTS.some(w => w.id === wId)) ids.add(wId);
+          if (workouts.some(w => w.id === wId)) ids.add(wId);
         }
         return ids;
       }
@@ -70,7 +72,7 @@ export default function DashboardPage() {
       const thisWeekDone   = doneWorkouts(thisWeekChecks);
       setSessionsThisWeek(thisWeekDone.size);
 
-      // Total sessions across all weeks
+      // Total sessions : compte toutes les clés pm_checks_ sans filtre par programme
       let total = 0;
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -79,18 +81,18 @@ export default function DashboardPage() {
           const raw = localStorage.getItem(k);
           if (!raw) continue;
           const checks: string[] = JSON.parse(raw);
-          total += new Set(checks.map(id => id.split("_")[0]).filter(wId => MOCK_WORKOUTS.some(w => w.id === wId))).size;
+          total += new Set(checks.map(id => id.split("_")[0])).size;
         } catch {}
       }
       setTotalSessions(total);
 
-      // Weekly streak (semaines consécutives avec ≥ 1 séance)
+      // Streak hebdomadaire — une semaine non vide compte
       let s = 0;
       for (let offset = 0; offset >= -52; offset--) {
         try {
           const raw = localStorage.getItem(getWeekStorageKey(offset));
           const checks: string[] = raw ? JSON.parse(raw) : [];
-          const hasDone = checks.some(id => MOCK_WORKOUTS.some(w => w.id === id.split("_")[0]));
+          const hasDone = checks.length > 0;
           if (hasDone) s++;
           else if (offset < 0) break;
         } catch { break; }
@@ -99,15 +101,17 @@ export default function DashboardPage() {
 
       if (day === 0) return;
 
+      const n = workouts.length || 1;
       let nextIndex = 0;
       if (thisWeekDone.size > 0) {
-        nextIndex = thisWeekDone.size % 3;
+        nextIndex = thisWeekDone.size % n;
       } else {
         const prevDone = doneWorkouts(parseChecks(getWeekStorageKey(-1)));
-        nextIndex = prevDone.size % 3;
+        nextIndex = prevDone.size % n;
       }
 
-      const workout = MOCK_WORKOUTS[nextIndex];
+      const workout = workouts[nextIndex];
+      if (!workout) return;
       setTodayWorkout(workout);
       const done = workout.exercises?.filter(e => thisWeekChecks.has(`${workout.id}_${e.id}`)).length ?? 0;
       setTodayDone(done);
@@ -127,7 +131,7 @@ export default function DashboardPage() {
       window.removeEventListener("storage", onStorage);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, []);
+  }, [activeProgram]);
 
   const todayTotal = todayWorkout?.exercises?.length ?? 0;
   const todayComplete = todayDone > 0 && todayDone === todayTotal;

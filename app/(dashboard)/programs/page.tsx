@@ -13,7 +13,7 @@ import { MOCK_BODYWEIGHT } from "@/lib/mock-data";
 
 export default function ProgramsPage() {
   const router = useRouter();
-  const { allPrograms, activeProgram, ready, addProgram, removeProgram } = useLocalPrograms();
+  const { allPrograms, activeProgram, ready, addProgram, removeProgram, activateProgram } = useLocalPrograms();
   const [modalOpen, setModalOpen] = useState(false);
 
   const currentWeight = MOCK_BODYWEIGHT[MOCK_BODYWEIGHT.length - 1].weight;
@@ -75,7 +75,7 @@ export default function ProgramsPage() {
                     program={p}
                     index={i + 1}
                     currentWeight={currentWeight}
-                    onActivate={() => {}}
+                    onActivate={id => activateProgram(id)}
                     onDelete={id => removeProgram(id)}
                   />
                 </Link>

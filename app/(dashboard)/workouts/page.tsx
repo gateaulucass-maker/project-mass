@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { MOCK_WORKOUTS } from "@/lib/mock-data";
 import { getWorkoutTypeLabel } from "@/lib/utils";
 import { useWorkoutChecks, getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+import { useLocalPrograms } from "@/hooks/useLocalPrograms";
 
 interface ExerciseOverride {
   weight?: number;
@@ -22,6 +23,11 @@ const OVERRIDES_KEY = "pm_exercise_overrides";
 export default function WorkoutsPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { checked, toggle } = useWorkoutChecks(weekOffset);
+  const { activeProgram } = useLocalPrograms();
+
+  // Utilise les séances du programme actif, PPL en fallback
+  const workouts = activeProgram?.workouts?.length ? activeProgram.workouts : MOCK_WORKOUTS;
+
   const [todayWorkoutId, setTodayWorkoutId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,24 +39,25 @@ export default function WorkoutsPage() {
       const ids = new Set<string>();
       for (const id of checks) {
         const wId = id.split("_")[0];
-        if (MOCK_WORKOUTS.some(w => w.id === wId)) ids.add(wId);
+        if (workouts.some(w => w.id === wId)) ids.add(wId);
       }
       return ids;
     }
 
     const thisWeekDone = doneFromChecks(checked);
+    const n = workouts.length || 1;
     let nextIndex = 0;
     if (thisWeekDone.size > 0) {
-      nextIndex = thisWeekDone.size % 3;
+      nextIndex = thisWeekDone.size % n;
     } else {
       try {
         const raw = localStorage.getItem(getWeekStorageKey(-1));
         const prevChecks = new Set<string>(raw ? JSON.parse(raw) as string[] : []);
-        nextIndex = doneFromChecks(prevChecks).size % 3;
+        nextIndex = doneFromChecks(prevChecks).size % n;
       } catch {}
     }
-    setTodayWorkoutId(MOCK_WORKOUTS[nextIndex]?.id ?? null);
-  }, [weekOffset, checked]);
+    setTodayWorkoutId(workouts[nextIndex]?.id ?? null);
+  }, [weekOffset, checked, workouts]);
 
   const [overrides, setOverrides] = useState<Record<string, ExerciseOverride>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -120,7 +127,7 @@ export default function WorkoutsPage() {
         </div>
 
         {/* Workout blocks */}
-        {MOCK_WORKOUTS.map((workout, wi) => {
+        {workouts.map((workout, wi) => {
           const exercises = workout.exercises ?? [];
           const isToday = workout.id === todayWorkoutId;
           const doneCount = exercises.filter(e => checked.has(`${workout.id}_${e.id}`)).length;

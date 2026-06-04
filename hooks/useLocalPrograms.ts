@@ -47,8 +47,11 @@ export function useLocalPrograms() {
     [custom],
   );
 
-  // Programme actif calculé par la date : si un programme couvre aujourd'hui, il prime sur is_active
+  // Un programme custom explicitement activé prend TOUJOURS le dessus sur les mocks
   const activeProgram = useMemo(() => {
+    const explicitCustom = custom.find(p => p.is_active);
+    if (explicitCustom) return explicitCustom;
+
     const todayStr = new Date().toISOString().split("T")[0];
     const covering = allPrograms.filter(p => {
       const started = p.start_date <= todayStr;
@@ -62,7 +65,7 @@ export function useLocalPrograms() {
       );
     }
     return allPrograms.find(p => p.is_active) ?? allPrograms[0];
-  }, [allPrograms]);
+  }, [allPrograms, custom]);
 
   function getById(id: string): Program | undefined {
     return allPrograms.find(p => p.id === id);
@@ -177,6 +180,13 @@ export function useLocalPrograms() {
 
   const isMock = (id: string) => MOCK_PROGRAMS.some(p => p.id === id);
 
+  function activateProgram(id: string) {
+    if (isMock(id)) return; // les mocks ont is_active hardcodé, on ne peut pas les modifier
+    const next = custom.map(p => ({ ...p, is_active: p.id === id }));
+    setCustom(next);
+    saveCustom(next);
+  }
+
   return {
     allPrograms,
     activeProgram,
@@ -186,6 +196,7 @@ export function useLocalPrograms() {
     isMock,
     addProgram,
     removeProgram,
+    activateProgram,
     addWorkout,
     removeWorkout,
     addExercise,
