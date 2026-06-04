@@ -33,10 +33,18 @@ export function useLocalPrograms() {
     function onVisible() {
       if (document.visibilityState === "visible") load();
     }
+    function onFocus() { load(); }
+    function onPageShow(e: PageTransitionEvent) {
+      if (e.persisted) load();
+    }
     window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow as EventListener);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow as EventListener);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);

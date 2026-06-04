@@ -116,13 +116,24 @@ export default function DashboardPage() {
     function onStorage(e: StorageEvent) {
       if (e.key?.startsWith("pm_checks_")) compute();
     }
+    function onUpdated() { compute(); } // même onglet (toggle workout)
     function onVisible() {
       if (document.visibilityState === "visible") compute();
     }
+    function onFocus() { compute(); }
+    function onPageShow(e: PageTransitionEvent) {
+      if (e.persisted) compute(); // bfcache mobile
+    }
     window.addEventListener("storage", onStorage);
+    window.addEventListener("pm-updated", onUpdated);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow as EventListener);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("pm-updated", onUpdated);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow as EventListener);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [activeProgram]);

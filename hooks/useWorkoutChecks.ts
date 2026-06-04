@@ -22,16 +22,33 @@ export function useWorkoutChecks(weekOffset: number) {
       }
     }
     read();
+
     function onStorage(e: StorageEvent) {
       if (e.key === storageKey) read();
+    }
+    // Événement custom pour les mises à jour dans le même onglet
+    function onUpdated(e: Event) {
+      const key = (e as CustomEvent<string>).detail;
+      if (!key || key === storageKey) read();
     }
     function onVisible() {
       if (document.visibilityState === "visible") read();
     }
+    function onFocus() { read(); }
+    function onPageShow(e: PageTransitionEvent) {
+      if (e.persisted) read(); // bfcache mobile (iOS Safari)
+    }
+
     window.addEventListener("storage", onStorage);
+    window.addEventListener("pm-updated", onUpdated);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow as EventListener);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("pm-updated", onUpdated);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow as EventListener);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [storageKey]);
@@ -41,7 +58,11 @@ export function useWorkoutChecks(weekOffset: number) {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      try { localStorage.setItem(storageKey, JSON.stringify([...next])); } catch {}
+      try {
+        localStorage.setItem(storageKey, JSON.stringify([...next]));
+        // Notifie tous les composants du même onglet
+        window.dispatchEvent(new CustomEvent("pm-updated", { detail: storageKey }));
+      } catch {}
       return next;
     });
   }, [storageKey]);
