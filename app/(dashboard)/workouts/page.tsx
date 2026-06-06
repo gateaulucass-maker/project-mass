@@ -37,7 +37,7 @@ export default function WorkoutsPage() {
 
     function countDone(checks: Set<string>): number {
       const ids = new Set<string>();
-      for (const id of checks) ids.add(id.split("_")[0]);
+      for (const id of checks) ids.add(id.split("_e")[0]);
       return ids.size;
     }
 

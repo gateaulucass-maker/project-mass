@@ -97,7 +97,7 @@ export function useLocalPrograms() {
   function addProgram(data: Omit<Program, "id" | "user_id" | "created_at">): Program {
     const p: Program = {
       ...data,
-      id: `p_${Date.now()}`,
+      id: `p${Date.now()}`,
       user_id: "local",
       created_at: new Date().toISOString(),
       workouts: [],
@@ -116,7 +116,7 @@ export function useLocalPrograms() {
 
   function addWorkout(programId: string, title: string, workout_type: WorkoutType): Workout | null {
     const w: Workout = {
-      id: `w_${Date.now()}`,
+      id: `w${Date.now()}`,
       program_id: programId,
       title,
       workout_type,
@@ -151,7 +151,7 @@ export function useLocalPrograms() {
     muscle_group: MuscleGroup = "chest",
   ) {
     const ex: Exercise = {
-      id: `e_${Date.now()}`,
+      id: `e${Date.now()}`,
       workout_id: workoutId,
       name,
       muscle_group,

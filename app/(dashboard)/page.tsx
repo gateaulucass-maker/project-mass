@@ -61,9 +61,16 @@ export default function DashboardPage() {
 
       // Compte les workouts distincts cochés — SANS filtrer par programme
       // évite les incohérences quand on change de programme en cours de semaine
+      // Extrait l'ID workout depuis une clé de check "workoutId_exerciseId"
+      // Les IDs d'exercices commencent toujours par "e" → "_e" est le séparateur fiable
+      // Gère : w1_e1 (PPL), w_1748xxx_e_1749xxx (ancien custom), w1748xxx_e1749xxx (nouveau)
+      function workoutIdFrom(checkKey: string): string {
+        return checkKey.split("_e")[0];
+      }
+
       function countDone(checks: Set<string>): number {
         const ids = new Set<string>();
-        for (const id of checks) ids.add(id.split("_")[0]);
+        for (const id of checks) ids.add(workoutIdFrom(id));
         return ids.size;
       }
 
@@ -80,7 +87,7 @@ export default function DashboardPage() {
           const raw = localStorage.getItem(k);
           if (!raw) continue;
           const checks: string[] = JSON.parse(raw);
-          total += new Set(checks.map(id => id.split("_")[0])).size;
+          total += new Set(checks.map(workoutIdFrom)).size;
         } catch {}
       }
       setTotalSessions(total);
