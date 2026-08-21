@@ -3,6 +3,7 @@
 import { Bell } from "lucide-react";
 import Link from "next/link";
 import { MOCK_USER } from "@/lib/mock-data";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface HeaderProps {
   title?: string;
@@ -10,6 +11,8 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle }: HeaderProps) {
+  const { unreadCount } = useNotifications();
+
   return (
     <header className="flex items-center justify-between px-4 lg:px-6 py-4 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-40">
       <div>
@@ -21,7 +24,9 @@ export function Header({ title, subtitle }: HeaderProps) {
         <Link href="/notifications">
           <div className="relative w-9 h-9 rounded-xl bg-secondary hover:bg-secondary/70 border border-border flex items-center justify-center transition-all cursor-pointer">
             <Bell className="w-4 h-4 text-muted-foreground" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-700 rounded-full" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-700 rounded-full" />
+            )}
           </div>
         </Link>
 

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { MOCK_USER } from "@/lib/mock-data";
+import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
 import { cn } from "@/lib/utils";
 
 function Section({ title, children, delay = 0 }: { title: string; children: React.ReactNode; delay?: number }) {
@@ -67,9 +68,7 @@ export default function SettingsPage() {
   const [frequency, setFrequency] = useState("3");
   const [saving, setSaving] = useState(false);
 
-  const [notifWorkout, setNotifWorkout] = useState(true);
-  const [notifPR, setNotifPR] = useState(true);
-  const [notifProgress, setNotifProgress] = useState(false);
+  const { prefs, update: updatePrefs } = useNotificationPrefs();
 
   const inputClass = "w-full px-4 py-3 bg-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/30 transition-all";
 
@@ -169,23 +168,23 @@ export default function SettingsPage() {
         <Section title="Notifications" delay={0.15}>
           <Toggle
             label="Rappel séance"
-            description="Te notifie quand c'est l'heure de t'entraîner"
-            value={notifWorkout}
-            onChange={setNotifWorkout}
+            description="Notifie quand une séance du jour est terminée ou en attente"
+            value={prefs.workout}
+            onChange={v => updatePrefs({ workout: v })}
           />
           <div className="border-t border-border" />
           <Toggle
             label="Nouveaux records"
             description="Alerte dès qu'un PR est battu"
-            value={notifPR}
-            onChange={setNotifPR}
+            value={prefs.pr}
+            onChange={v => updatePrefs({ pr: v })}
           />
           <div className="border-t border-border" />
           <Toggle
-            label="Résumé hebdomadaire"
-            description="Récap de la semaine chaque dimanche"
-            value={notifProgress}
-            onChange={setNotifProgress}
+            label="Programme & objectifs"
+            description="Programme bientôt/déjà terminé, objectif de poids atteint"
+            value={prefs.progress}
+            onChange={v => updatePrefs({ progress: v })}
           />
         </Section>
 

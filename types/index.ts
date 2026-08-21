@@ -38,6 +38,8 @@ export interface Program {
   weekly_frequency: number;
   goal?: string;
   is_active: boolean;
+  completed?: boolean;
+  completed_at?: string;
   created_at: string;
   workouts?: Workout[];
 }

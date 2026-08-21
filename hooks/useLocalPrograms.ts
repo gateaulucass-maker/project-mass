@@ -56,38 +56,36 @@ export function useLocalPrograms() {
   );
 
   const activeProgram = useMemo(() => {
-    // 1. Programme custom explicitement activé → priorité absolue
-    const explicitCustom = custom.find(p => p.is_active);
-    if (explicitCustom) return explicitCustom;
-
-    // 2. Si l'utilisateur a des programmes custom, prendre le plus récent automatiquement
-    //    (évite que PPL expiré reste affiché quand Summer Body existe)
-    if (custom.length > 0) {
-      const todayStr = new Date().toISOString().split("T")[0];
-      const covering = custom.filter(p => {
-        const started = p.start_date <= todayStr;
-        const ongoing = !p.end_date || p.end_date >= todayStr;
-        return started && ongoing;
-      });
-      if (covering.length > 0) {
-        return [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-      }
-      // Aucun custom ne couvre aujourd'hui → le plus récent quand même
-      return [...custom].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-    }
-
-    // 3. Fallback mocks — programmes dont la date couvre aujourd'hui
     const todayStr = new Date().toISOString().split("T")[0];
-    const covering = allPrograms.filter(p => {
+    const isCovering = (p: Program) => {
       const started = p.start_date <= todayStr;
       const ongoing = !p.end_date || p.end_date >= todayStr;
       return started && ongoing;
-    });
+    };
+
+    // 1. Programme custom explicitement activé et pas terminé → priorité absolue
+    const explicitCustom = custom.find(p => p.is_active && !p.completed);
+    if (explicitCustom) return explicitCustom;
+
+    // 2. Si l'utilisateur a des programmes custom, prendre le plus récent en cours.
+    //    Un programme terminé (objectif atteint ou date dépassée) ou expiré ne compte
+    //    plus jamais comme actif — sinon on reste bloqué dessus indéfiniment.
+    if (custom.length > 0) {
+      const covering = custom.filter(p => !p.completed && isCovering(p));
+      if (covering.length > 0) {
+        return [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+      }
+      // Aucun custom en cours → pas de fallback : l'utilisateur doit relancer un programme
+      return undefined;
+    }
+
+    // 3. Fallback mocks — uniquement les programmes dont la période couvre aujourd'hui
+    const covering = allPrograms.filter(isCovering);
     if (covering.length > 0) {
       return covering.find(p => p.is_active) ??
         [...covering].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
     }
-    return allPrograms.find(p => p.is_active) ?? allPrograms[0];
+    return undefined;
   }, [allPrograms, custom]);
 
   function getById(id: string): Program | undefined {
@@ -205,7 +203,28 @@ export function useLocalPrograms() {
 
   function activateProgram(id: string) {
     if (isMock(id)) return; // les mocks ont is_active hardcodé, on ne peut pas les modifier
-    const next = custom.map(p => ({ ...p, is_active: p.id === id }));
+    // Réactiver explicitement un programme lève aussi son statut "terminé" —
+    // sinon il resterait invisible pour la sélection du programme actif malgré is_active:true.
+    const next = custom.map(p => ({
+      ...p,
+      is_active: p.id === id,
+      completed: p.id === id ? false : p.completed,
+      completed_at: p.id === id ? undefined : p.completed_at,
+    }));
+    setCustom(next);
+    saveCustom(next);
+  }
+
+  // Marque un programme custom comme terminé (objectif atteint ou date dépassée) :
+  // il ne sera plus jamais resélectionné comme actif, même si ses dates le couvrent encore.
+  function completeProgram(id: string) {
+    if (isMock(id)) return;
+    const next = custom.map(p => p.id !== id ? p : {
+      ...p,
+      is_active: false,
+      completed: true,
+      completed_at: new Date().toISOString(),
+    });
     setCustom(next);
     saveCustom(next);
   }
@@ -220,6 +239,7 @@ export function useLocalPrograms() {
     addProgram,
     removeProgram,
     activateProgram,
+    completeProgram,
     addWorkout,
     removeWorkout,
     addExercise,

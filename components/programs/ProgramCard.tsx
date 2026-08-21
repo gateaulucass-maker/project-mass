@@ -22,7 +22,7 @@ export function ProgramCard({ program, index, currentWeight, onActivate, onDelet
 
   const todayStr = new Date().toISOString().split("T")[0];
   const isUpcoming = program.start_date > todayStr;
-  const isExpired  = !!program.end_date && program.end_date < todayStr;
+  const isExpired  = !!program.completed || (!!program.end_date && program.end_date < todayStr);
 
   const daysLeft = program.end_date
     ? differenceInDays(parseISO(program.end_date), new Date())

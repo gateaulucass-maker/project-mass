@@ -4,15 +4,17 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 // motion utilisé uniquement pour la barre de progression
 import { fr } from "date-fns/locale";
-import { Dumbbell, ArrowRight, TrendingUp, Zap, CheckCircle2, ChevronRight, Flame } from "lucide-react";
+import { Dumbbell, ArrowRight, TrendingUp, Zap, CheckCircle2, ChevronRight, Flame, Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { WeightChart } from "@/components/dashboard/WeightChart";
 import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { RecentPRs } from "@/components/dashboard/RecentPRs";
+import { ProgramModal, type ProgramFormData } from "@/components/programs/ProgramModal";
 import {
   MOCK_PERSONAL_RECORDS,
   MOCK_WORKOUTS,
@@ -21,14 +23,19 @@ import {
 import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
 import { useLocalPrograms } from "@/hooks/useLocalPrograms";
 import { useLocalBodyweight } from "@/hooks/useLocalBodyweight";
+import { pushNotification } from "@/hooks/useNotifications";
+import { getNotificationPrefs } from "@/hooks/useNotificationPrefs";
 import { differenceInDays, parseISO } from "date-fns";
 import { calculateWeightProgress } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const { activeProgram } = useLocalPrograms();
+  const router = useRouter();
+  const { activeProgram, custom, isMock, addProgram, completeProgram } = useLocalPrograms();
   const { logs: weightLogs } = useLocalBodyweight();
   const currentWeight = weightLogs.length > 0 ? weightLogs[weightLogs.length - 1].weight : 0;
   const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
+
+  const [modalOpen, setModalOpen] = useState(false);
 
   const weeklyFrequency = activeProgram?.weekly_frequency ?? 3;
 
@@ -36,9 +43,21 @@ export default function DashboardPage() {
     ? differenceInDays(parseISO(activeProgram.end_date), new Date())
     : null;
 
-  const weightProgress = activeProgram?.start_weight && activeProgram?.target_weight
-    ? calculateWeightProgress(currentWeight, activeProgram.start_weight, activeProgram.target_weight)
+  const hasWeightGoal =
+    !!activeProgram?.start_weight &&
+    !!activeProgram?.target_weight &&
+    activeProgram.start_weight !== activeProgram.target_weight;
+
+  const weightProgress = hasWeightGoal
+    ? calculateWeightProgress(currentWeight, activeProgram!.start_weight!, activeProgram!.target_weight!)
     : 0;
+
+  // Dernier programme créé par l'utilisateur — sert à afficher un message de
+  // félicitations quand il vient d'être marqué terminé, plutôt qu'un état vide générique.
+  const lastCustom = custom.length > 0
+    ? [...custom].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
+    : null;
+  const justFinishedTitle = !activeProgram && lastCustom?.completed ? lastCustom.title : null;
 
   const [todayWorkout, setTodayWorkout] = useState<(typeof MOCK_WORKOUTS)[0] | null>(null);
   const [todayDone, setTodayDone] = useState(0);
@@ -47,7 +66,13 @@ export default function DashboardPage() {
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
-    const workouts = activeProgram?.workouts?.length ? activeProgram.workouts : MOCK_WORKOUTS;
+    if (!activeProgram) {
+      setTodayWorkout(null);
+      setTodayDone(0);
+      return;
+    }
+
+    const workouts = activeProgram.workouts?.length ? activeProgram.workouts : MOCK_WORKOUTS;
 
     function compute() {
       const day = new Date().getDay();
@@ -148,6 +173,64 @@ export default function DashboardPage() {
   const todayTotal = todayWorkout?.exercises?.length ?? 0;
   const todayComplete = todayDone > 0 && todayDone === todayTotal;
 
+  // Notif réelle : séance du jour terminée (transition false → true uniquement)
+  const prevTodayCompleteRef = useRef(false);
+  useEffect(() => {
+    if (todayComplete && !prevTodayCompleteRef.current && todayWorkout) {
+      if (getNotificationPrefs().workout) {
+        const dateKey = new Date().toISOString().split("T")[0];
+        pushNotification(
+          "workout",
+          "Séance terminée",
+          `Bravo, tu as terminé "${todayWorkout.title}" aujourd'hui !`,
+          `workout-done-${todayWorkout.id}-${dateKey}`
+        );
+      }
+    }
+    prevTodayCompleteRef.current = todayComplete;
+  }, [todayComplete, todayWorkout]);
+
+  // Notif réelle : programme bientôt terminé (1x/jour tant qu'il reste ≤ 7 jours)
+  useEffect(() => {
+    if (!activeProgram || daysLeft === null) return;
+    if (daysLeft >= 0 && daysLeft <= 7 && getNotificationPrefs().progress) {
+      const dateKey = new Date().toISOString().split("T")[0];
+      pushNotification(
+        "program",
+        "Programme bientôt terminé",
+        `Il reste ${daysLeft} jour${daysLeft > 1 ? "s" : ""} à "${activeProgram.title}". Pense à planifier la suite.`,
+        `program-soon-${activeProgram.id}-${dateKey}`
+      );
+    }
+  }, [activeProgram, daysLeft]);
+
+  // Détection réelle de fin de programme : objectif de poids atteint OU date dépassée.
+  // Une fois détecté, le programme est marqué terminé et arrête d'être proposé comme actif —
+  // l'accueil revient alors à l'état "créer un nouveau programme".
+  useEffect(() => {
+    if (!activeProgram || isMock(activeProgram.id)) return;
+    const goalReached = hasWeightGoal && weightProgress >= 100;
+    const dateExpired = daysLeft !== null && daysLeft < 0;
+    if (!goalReached && !dateExpired) return;
+
+    completeProgram(activeProgram.id);
+    if (getNotificationPrefs().progress) {
+      pushNotification(
+        "program",
+        "Programme terminé 🎉",
+        goalReached
+          ? `Objectif de poids atteint pour "${activeProgram.title}". Prêt pour la suite ?`
+          : `"${activeProgram.title}" est arrivé à échéance. Crée ton prochain programme.`,
+        `program-finished-${activeProgram.id}`
+      );
+    }
+  }, [activeProgram, hasWeightGoal, weightProgress, daysLeft, isMock, completeProgram]);
+
+  async function handleCreateProgram(data: ProgramFormData) {
+    const p = addProgram({ ...data, is_active: true });
+    router.push(`/programs/${p.id}`);
+  }
+
   return (
     <div className="flex-1">
       <Header />
@@ -170,51 +253,77 @@ export default function DashboardPage() {
         </div>
 
         {/* Programme actif banner */}
-        {activeProgram && (
-        <div className="relative bg-card border border-brand-700/20 rounded-2xl p-5 overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
-          <div className="h-0.5 gradient-brand absolute top-0 left-0 right-0" />
-          <div className="flex items-start justify-between relative z-10">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-700 animate-pulse" />
-                  En cours
-                </span>
-                {daysLeft !== null && daysLeft >= 0 && (
-                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${daysLeft <= 7 ? "bg-orange-50 text-orange-600 border border-orange-200" : "bg-secondary text-muted-foreground border border-border"}`}>
-                    <Flame className="w-3 h-3" />
-                    {daysLeft}j restants
+        {activeProgram ? (
+          <div className="relative bg-card border border-brand-700/20 rounded-2xl p-5 overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
+            <div className="h-0.5 gradient-brand absolute top-0 left-0 right-0" />
+            <div className="flex items-start justify-between relative z-10">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-700 animate-pulse" />
+                    En cours
                   </span>
-                )}
+                  {daysLeft !== null && daysLeft >= 0 && (
+                    <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${daysLeft <= 7 ? "bg-orange-50 text-orange-600 border border-orange-200" : "bg-secondary text-muted-foreground border border-border"}`}>
+                      <Flame className="w-3 h-3" />
+                      {daysLeft}j restants
+                    </span>
+                  )}
+                </div>
+                <h2 className="text-lg font-bold">{activeProgram.title}</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {activeProgram.target_weight ? `Objectif : ${activeProgram.target_weight} kg · ` : ""}{currentWeight} kg actuellement
+                </p>
               </div>
-              <h2 className="text-lg font-bold">{activeProgram.title}</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                {activeProgram.target_weight ? `Objectif : ${activeProgram.target_weight} kg · ` : ""}{currentWeight} kg actuellement
-              </p>
+              <Link href="/programs">
+                <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-brand-700 transition-colors mt-1" />
+              </Link>
             </div>
-            <Link href="/programs">
-              <ChevronRight className="w-5 h-5 text-muted-foreground hover:text-brand-700 transition-colors mt-1" />
-            </Link>
+            {hasWeightGoal && (
+              <div className="mt-4 relative z-10">
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="text-muted-foreground">{activeProgram.start_weight} kg</span>
+                  <span className="font-semibold text-brand-700">{Math.round(weightProgress)}%</span>
+                  <span className="text-muted-foreground">{activeProgram.target_weight} kg</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${weightProgress}%` }}
+                    transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+                    className="h-full gradient-brand rounded-full"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-          {activeProgram.start_weight && activeProgram.target_weight && (
-          <div className="mt-4 relative z-10">
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="text-muted-foreground">{activeProgram.start_weight} kg</span>
-              <span className="font-semibold text-brand-700">{Math.round(weightProgress)}%</span>
-              <span className="text-muted-foreground">{activeProgram.target_weight} kg</span>
+        ) : (
+          <div className="relative bg-card border border-dashed border-brand-700/30 rounded-2xl p-6 text-center overflow-hidden">
+            <div className="w-14 h-14 rounded-2xl gradient-brand flex items-center justify-center mx-auto mb-4 glow-brand-sm">
+              <CheckCircle2 className="w-6 h-6 text-white" />
             </div>
-            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${weightProgress}%` }}
-                transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
-                className="h-full gradient-brand rounded-full"
-              />
-            </div>
+            {justFinishedTitle ? (
+              <>
+                <h2 className="text-lg font-bold mb-1">Objectif atteint, bravo ! 🎉</h2>
+                <p className="text-sm text-muted-foreground mb-5">
+                  Tu as terminé <span className="font-semibold text-foreground">{justFinishedTitle}</span>. Prêt pour la suite ?
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold mb-1">Aucun programme actif</h2>
+                <p className="text-sm text-muted-foreground mb-5">Crée ton programme pour structurer ton entraînement.</p>
+              </>
+            )}
+            <button
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 gradient-brand text-white text-sm font-semibold rounded-xl glow-brand-sm hover:opacity-90 active:scale-[0.98] transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Créer un nouveau programme
+            </button>
           </div>
-          )}
-        </div>
         )}
 
         {/* Stats */}
@@ -228,7 +337,7 @@ export default function DashboardPage() {
         />
 
         {/* Séance du jour */}
-        {todayWorkout ? (
+        {activeProgram && (todayWorkout ? (
           <div>
             <Link href="/workouts">
               <div className={`bg-card border rounded-2xl p-5 hover:border-brand-700/40 transition-all group card-hover flex items-center gap-4 ${todayComplete ? "border-emerald-200" : "border-border"}`}>
@@ -272,7 +381,7 @@ export default function DashboardPage() {
               <p className="text-xs text-muted-foreground">Récupération — profites-en.</p>
             </div>
           </div>
-        )}
+        ))}
 
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Weight Chart */}
@@ -338,6 +447,8 @@ export default function DashboardPage() {
           <RecentPRs prs={MOCK_PERSONAL_RECORDS} />
         </div>
       </div>
+
+      <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleCreateProgram} />
     </div>
   );
 }
