@@ -12,6 +12,8 @@ import {
   LogOut,
   Settings,
   Activity,
+  Footprints,
+  Waves,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +21,8 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/programs", label: "Programmes", icon: Target },
   { href: "/workouts", label: "Séances", icon: Dumbbell },
+  { href: "/running", label: "Course", icon: Footprints },
+  { href: "/swimming", label: "Piscine", icon: Waves },
   { href: "/progress", label: "Progression", icon: TrendingUp },
   { href: "/weight", label: "Poids", icon: Scale },
 ];

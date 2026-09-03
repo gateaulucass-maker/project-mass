@@ -95,6 +95,32 @@ export interface BodyweightLog {
   created_at: string;
 }
 
+export type RunType = "easy" | "interval" | "race" | "trail";
+
+export interface RunningLog {
+  id: string;
+  user_id: string;
+  distance_km: number;
+  duration_min: number;
+  avg_heart_rate?: number;
+  run_type: RunType;
+  created_at: string;
+}
+
+export type SwimStroke = "crawl" | "breaststroke" | "backstroke" | "butterfly" | "mixed";
+export type PoolLength = 25 | 50;
+
+export interface SwimmingLog {
+  id: string;
+  user_id: string;
+  distance_m: number;
+  duration_min: number;
+  laps: number;
+  stroke: SwimStroke;
+  pool_length: PoolLength;
+  created_at: string;
+}
+
 export interface ProgressPhoto {
   id: string;
   user_id: string;

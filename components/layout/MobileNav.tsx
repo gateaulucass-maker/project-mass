@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Dumbbell, TrendingUp, Target, Scale } from "lucide-react";
+import { LayoutDashboard, Dumbbell, TrendingUp, Target, Scale, Footprints, Waves } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/programs", label: "Programmes", icon: Target },
   { href: "/workouts", label: "Séances", icon: Dumbbell },
+  { href: "/running", label: "Course", icon: Footprints },
+  { href: "/swimming", label: "Piscine", icon: Waves },
   { href: "/progress", label: "Stats", icon: TrendingUp },
   { href: "/weight", label: "Poids", icon: Scale },
 ];

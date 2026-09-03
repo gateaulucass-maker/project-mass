@@ -102,3 +102,57 @@ export function calculateWeightProgress(current: number, start: number, target: 
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
+
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${Math.round(minutes)} min`;
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
+
+export function formatPacePerKm(durationMin: number, distanceKm: number): string {
+  if (!distanceKm) return "—";
+  const paceMin = durationMin / distanceKm;
+  const min = Math.floor(paceMin);
+  const sec = Math.round((paceMin - min) * 60);
+  return `${min}:${String(sec).padStart(2, "0")}/km`;
+}
+
+export function formatPacePer100m(durationMin: number, distanceM: number): string {
+  if (!distanceM) return "—";
+  const paceMin = durationMin / (distanceM / 100);
+  const min = Math.floor(paceMin);
+  const sec = Math.round((paceMin - min) * 60);
+  return `${min}:${String(sec).padStart(2, "0")}/100m`;
+}
+
+export function getRunTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    easy: "Footing",
+    interval: "Fractionné",
+    race: "Course",
+    trail: "Trail",
+  };
+  return labels[type] ?? type;
+}
+
+export function getRunTypeColor(type: string): string {
+  const colors: Record<string, string> = {
+    easy: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+    interval: "text-orange-400 bg-orange-400/10 border-orange-400/20",
+    race: "text-red-400 bg-red-400/10 border-red-400/20",
+    trail: "text-amber-600 bg-amber-600/10 border-amber-600/20",
+  };
+  return colors[type] ?? "text-gray-400 bg-gray-400/10 border-gray-400/20";
+}
+
+export function getSwimStrokeLabel(stroke: string): string {
+  const labels: Record<string, string> = {
+    crawl: "Crawl",
+    breaststroke: "Brasse",
+    backstroke: "Dos",
+    butterfly: "Papillon",
+    mixed: "Mixte",
+  };
+  return labels[stroke] ?? stroke;
+}
