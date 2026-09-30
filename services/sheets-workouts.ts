@@ -1,4 +1,4 @@
-import { readSheet, appendRow, updateRow, deleteRow, SHEETS, HEADERS } from "@/lib/google-sheets";
+import { readSheet, appendRow, SHEETS, HEADERS } from "@/lib/google-sheets";
 import type { Workout, Exercise, WorkoutLog } from "@/types";
 
 function rowToWorkout(row: Record<string, string>): Workout {

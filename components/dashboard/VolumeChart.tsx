@@ -3,31 +3,19 @@
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { addWeeks, getISOWeek } from "date-fns";
-import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+import { countSessionsForWeek } from "@/lib/sessions";
 
 interface WeekStat {
   week: string;
   sessions: number;
 }
 
-function workoutIdFrom(checkKey: string): string {
-  return checkKey.split("_e")[0];
-}
-
 function buildStats(): WeekStat[] {
   const stats: WeekStat[] = [];
   for (let offset = -7; offset <= 0; offset++) {
     const d = addWeeks(new Date(), offset);
-    const key = getWeekStorageKey(offset);
-    let sessions = 0;
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        const checks: string[] = JSON.parse(raw);
-        sessions = new Set(checks.map(workoutIdFrom)).size;
-      }
-    } catch {}
-    stats.push({ week: `S${getISOWeek(d)}`, sessions });
+    // Même règle de comptage que l'accueil (lib/sessions), au lieu d'une copie locale.
+    stats.push({ week: `S${getISOWeek(d)}`, sessions: countSessionsForWeek(offset) });
   }
   return stats;
 }

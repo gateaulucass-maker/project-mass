@@ -3,13 +3,15 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Program, Workout, Exercise, WorkoutType, MuscleGroup } from "@/types";
 import { MOCK_PROGRAMS } from "@/lib/mock-data";
+import { todayLocal } from "@/lib/dates";
 
 const KEY = "pm_programs_v2";
 
 function loadCustom(): Program[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Program[]) : [];
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? (parsed as Program[]) : [];
   } catch { return []; }
 }
 
@@ -56,7 +58,7 @@ export function useLocalPrograms() {
   );
 
   const activeProgram = useMemo(() => {
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = todayLocal();
     const isCovering = (p: Program) => {
       const started = p.start_date <= todayStr;
       const ongoing = !p.end_date || p.end_date >= todayStr;

@@ -26,12 +26,12 @@ export const viewport: Viewport = {
   themeColor: "#B91C1C",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // maximumScale retiré : bloquer le zoom casse WCAG 1.4.4 (agrandissement du texte).
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>

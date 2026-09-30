@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Plus, Trash2, Check, Pencil, Clock, ChevronRight,
-  Dumbbell, Flame, Calendar,
+  ArrowLeft, Plus, Trash2, Check, Pencil, Clock,
+  Dumbbell, Flame,
 } from "lucide-react";
-import { format, parseISO, differenceInDays } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Header } from "@/components/layout/Header";
 import { useLocalPrograms } from "@/hooks/useLocalPrograms";
@@ -17,6 +17,7 @@ import {
   getMuscleGroupLabel, cn,
 } from "@/lib/utils";
 import type { WorkoutType } from "@/types";
+import { daysUntil } from "@/lib/dates";
 
 // ─── constantes ────────────────────────────────────────────────────────────────
 
@@ -88,7 +89,7 @@ export default function ProgramDetailPage() {
   const exercises  = currentTab?.exercises ?? [];
 
   const daysLeft = program.end_date
-    ? differenceInDays(parseISO(program.end_date), new Date())
+    ? daysUntil(program.end_date)
     : null;
 
   // ── handlers ────────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ProgramType } from "@/types";
 import { getProgramTypeLabel } from "@/lib/utils";
+import { todayLocal } from "@/lib/dates";
 
 const PROGRAM_TYPES: ProgramType[] = ["mass", "cut", "strength", "maintenance", "recomposition"];
 
@@ -32,7 +33,7 @@ export function ProgramModal({ open, onClose, onSubmit }: ProgramModalProps) {
   const [form, setForm] = useState<ProgramFormData>({
     title: "",
     type: "mass",
-    start_date: new Date().toISOString().split("T")[0],
+    start_date: todayLocal(),
     weekly_frequency: 4,
   });
 

@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/client";
-import type { Program, ProgramType } from "@/types";
+import { createClientOrThrow } from "@/lib/supabase/client";
+import type { Program } from "@/types";
 
 export const programsService = {
   async getAll(userId: string): Promise<Program[]> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { data, error } = await supabase
       .from("programs")
       .select("*, workouts(*, exercises(*))")
@@ -15,7 +15,7 @@ export const programsService = {
   },
 
   async getActive(userId: string): Promise<Program | null> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { data, error } = await supabase
       .from("programs")
       .select("*, workouts(*, exercises(*))")
@@ -28,7 +28,7 @@ export const programsService = {
   },
 
   async create(userId: string, program: Omit<Program, "id" | "user_id" | "created_at">): Promise<Program> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { data, error } = await supabase
       .from("programs")
       .insert({ ...program, user_id: userId })
@@ -40,13 +40,13 @@ export const programsService = {
   },
 
   async update(id: string, updates: Partial<Program>): Promise<void> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { error } = await supabase.from("programs").update(updates).eq("id", id);
     if (error) throw error;
   },
 
   async activate(userId: string, programId: string): Promise<void> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     // Deactivate all programs for user
     await supabase.from("programs").update({ is_active: false }).eq("user_id", userId);
     // Activate the selected one
@@ -55,7 +55,7 @@ export const programsService = {
   },
 
   async delete(id: string): Promise<void> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { error } = await supabase.from("programs").delete().eq("id", id);
     if (error) throw error;
   },

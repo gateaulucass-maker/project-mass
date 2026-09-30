@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Plus, Minus, ChevronLeft, ChevronRight, Timer, Dumbbell, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Check, Plus, Minus, ChevronLeft, ChevronRight, Timer, Dumbbell, CheckCircle2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { MOCK_WORKOUTS } from "@/lib/mock-data";
-import type { Workout, Exercise } from "@/types";
 import { getMuscleGroupLabel, cn } from "@/lib/utils";
+import type { Workout } from "@/types";
+import { useLocalPrograms } from "@/hooks/useLocalPrograms";
+import { useExerciseOverrides } from "@/hooks/useExerciseOverrides";
+import { completeSession, checkKeyFor, getSessionsStorageKey } from "@/lib/sessions";
+import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
 
 interface SetState {
   reps: number;
@@ -22,20 +25,50 @@ interface ExerciseState {
 function ActiveWorkoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const workoutId = searchParams.get("workout") ?? MOCK_WORKOUTS[0].id;
-  const workout = MOCK_WORKOUTS.find(w => w.id === workoutId) ?? MOCK_WORKOUTS[0];
+  const { activeProgram, custom, ready } = useLocalPrograms();
+  const { overrides, ready: overridesReady } = useExerciseOverrides();
+  const workoutId = searchParams.get("workout");
+
+  // La séance provient des vrais programmes, plus de MOCK_WORKOUTS : sans cela un
+  // programme personnalisé retombait silencieusement sur la séance "Push" de démo.
+  // Même source que /workouts : le programme actif, puis les programmes personnalisés.
+  // Les programmes de démonstration sont exclus, sinon un utilisateur sans programme
+  // pouvait "terminer" une séance de démo et polluer ses statistiques.
+  const workout = useMemo<Workout | null>(() => {
+    const own = [
+      ...(activeProgram?.workouts ?? []),
+      ...custom.flatMap((p) => p.workouts ?? []),
+    ];
+    return own.find((w) => w.id === workoutId) ?? own[0] ?? null;
+  }, [activeProgram, custom, workoutId]);
 
   const [currentExIdx, setCurrentExIdx] = useState(0);
-  const [exerciseStates, setExerciseStates] = useState<ExerciseState[]>(
-    () => workout.exercises?.map(ex => ({
-      sets: Array.from({ length: ex.sets }, () => ({ reps: ex.reps, weight: ex.weight, completed: false })),
-    })) ?? []
-  );
+  const [exerciseStates, setExerciseStates] = useState<ExerciseState[]>([]);
+
+  // Initialisation UNE SEULE FOIS par séance, repérée par son id.
+  // Dépendre de l'objet `workout` relançait l'effet à chaque relecture du localStorage
+  // (focus, retour d'onglet) : l'exercice courant revenait à 0 et les séries validées
+  // étaient effacées en pleine séance.
+  const initializedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!workout || !overridesReady || initializedFor.current === workout.id) return;
+    initializedFor.current = workout.id;
+    setCurrentExIdx(0);
+    setExerciseStates(
+      (workout.exercises ?? []).map((ex) => {
+        // Les charges ajustées dans /workouts sont appliquées au démarrage.
+        const ov = overrides[ex.id];
+        const reps = ov?.reps ?? ex.reps;
+        const weight = ov?.weight ?? ex.weight;
+        return { sets: Array.from({ length: ex.sets }, () => ({ reps, weight, completed: false })) };
+      })
+    );
+  }, [workout, overrides, overridesReady]);
   const [restTimer, setRestTimer] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const exercises = workout.exercises ?? [];
+  const exercises = workout?.exercises ?? [];
   const currentEx = exercises[currentExIdx];
   const currentState = exerciseStates[currentExIdx];
 
@@ -63,21 +96,23 @@ function ActiveWorkoutContent() {
   }, [currentExIdx]);
 
   const toggleSet = useCallback((setIdx: number) => {
+    // L'updater doit rester pur : le timer de repos et le toast étaient déclenchés
+    // dedans, donc joués deux fois en StrictMode.
+    const wasCompleted = exerciseStates[currentExIdx]?.sets[setIdx]?.completed ?? false;
+
     setExerciseStates(prev => {
       const next = [...prev];
       const sets = [...next[currentExIdx].sets];
-      const wasCompleted = sets[setIdx].completed;
-      sets[setIdx] = { ...sets[setIdx], completed: !wasCompleted };
+      sets[setIdx] = { ...sets[setIdx], completed: !sets[setIdx].completed };
       next[currentExIdx] = { sets };
-
-      if (!wasCompleted && currentEx) {
-        setRestTimer(currentEx.rest_time);
-        toast.success(`Série ${setIdx + 1} validée ! Repos ${currentEx.rest_time}s`, { duration: 2000 });
-      }
-
       return next;
     });
-  }, [currentExIdx, currentEx]);
+
+    if (!wasCompleted && currentEx) {
+      setRestTimer(currentEx.rest_time);
+      toast.success(`Série ${setIdx + 1} validée ! Repos ${currentEx.rest_time}s`, { duration: 2000 });
+    }
+  }, [currentExIdx, currentEx, exerciseStates]);
 
   const allSetsCompleted = exerciseStates.every(es => es.sets.every(s => s.completed));
   const currentExCompleted = currentState?.sets.every(s => s.completed) ?? false;
@@ -92,8 +127,73 @@ function ActiveWorkoutContent() {
   }
 
   function handleFinish() {
+    if (!workout) return;
+
+    // La séance était auparavant perdue : handleFinish ne faisait qu'un toast, donc
+    // 24 séries validées laissaient l'accueil à 0 séance. On enregistre désormais la
+    // séance terminée ET on coche ses exercices, pour que /workouts reste cohérent.
+    const volume = exerciseStates.reduce(
+      (acc, es) => acc + es.sets.filter((st) => st.completed).reduce((a, st) => a + st.reps * st.weight, 0),
+      0
+    );
+
+    try {
+      completeSession(0, {
+        workout_id: workout.id,
+        workout_title: workout.title,
+        completed_at: new Date().toISOString(),
+        sets_done: completedSetsTotal,
+        volume_kg: volume,
+      });
+
+      const checksKey = getWeekStorageKey(0);
+      const raw = localStorage.getItem(checksKey);
+      const parsed = raw ? JSON.parse(raw) : null;
+      const checks = new Set<string>(Array.isArray(parsed) ? (parsed as string[]) : []);
+      for (const ex of workout.exercises ?? []) checks.add(checkKeyFor(workout.id, ex.id));
+      localStorage.setItem(checksKey, JSON.stringify([...checks]));
+      window.dispatchEvent(new CustomEvent("pm-updated", { detail: checksKey }));
+    } catch {
+      // Écriture impossible (quota, navigation privée) : on le dit au lieu de
+      // afficher un succès mensonger.
+      toast.error("Séance non enregistrée : stockage indisponible.");
+      setFinished(true);
+      return;
+    }
+
     setFinished(true);
     toast.success("Séance terminée ! 💪");
+  }
+
+  // Tant que les programmes ne sont pas chargés, on n'affiche pas une séance vide.
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="h-10 w-10 rounded-full border-2 border-border border-t-brand-700 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!workout) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+            <Dumbbell className="w-7 h-7 text-muted-foreground" aria-hidden="true" />
+          </div>
+          <h1 className="text-xl font-bold mb-2">Aucune séance à démarrer</h1>
+          <p className="text-muted-foreground text-sm mb-6">
+            Ajoute des séances à ton programme pour lancer un entraînement.
+          </p>
+          <button
+            onClick={() => router.push("/programs")}
+            className="w-full py-3.5 gradient-brand text-white font-bold rounded-2xl"
+          >
+            Voir mes programmes
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (finished) {
@@ -149,7 +249,7 @@ function ActiveWorkoutContent() {
           </button>
 
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">{workout.title}</p>
+            <p className="text-xs text-muted-foreground">{workout?.title}</p>
             <p className="text-sm font-bold text-brand-700">{formatElapsed(elapsed)}</p>
           </div>
 
@@ -165,7 +265,7 @@ function ActiveWorkoutContent() {
         <div className="max-w-2xl mx-auto mt-2">
           <div className="h-1 bg-secondary rounded-full overflow-hidden">
             <motion.div
-              animate={{ width: `${(completedSetsTotal / totalSets) * 100}%` }}
+              animate={{ width: `${totalSets > 0 ? (completedSetsTotal / totalSets) * 100 : 0}%` }}
               transition={{ duration: 0.3 }}
               className="h-full gradient-brand rounded-full"
             />
@@ -243,16 +343,17 @@ function ActiveWorkoutContent() {
           </button>
         </div>
 
-        {/* Current Exercise */}
+        {/* Current Exercise.
+            mode="wait" a été retiré : avec framer-motion 11 + React 19, le bloc sortant
+            ne terminait jamais sa sortie, donc l'exercice suivant ne s'affichait pas
+            (l'état changeait pourtant bien). */}
         {currentEx && currentState && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentExIdx}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
+          <motion.div
+            key={currentExIdx}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+          >
               {/* Exercise header */}
               <div className="bg-card border border-border rounded-2xl p-5 mb-4">
                 <div className="flex items-start justify-between mb-3">
@@ -384,8 +485,7 @@ function ActiveWorkoutContent() {
                   </button>
                 </div>
               )}
-            </motion.div>
-          </AnimatePresence>
+          </motion.div>
         )}
 
         {/* Finish button */}

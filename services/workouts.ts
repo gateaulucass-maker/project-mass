@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/client";
+import { createClientOrThrow } from "@/lib/supabase/client";
 import type { Workout, WorkoutLog, PersonalRecord } from "@/types";
 
 export const workoutsService = {
   async getByProgram(programId: string): Promise<Workout[]> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { data, error } = await supabase
       .from("workouts")
       .select("*, exercises(*)")
@@ -15,13 +15,13 @@ export const workoutsService = {
   },
 
   async logSet(log: Omit<WorkoutLog, "id" | "created_at">): Promise<void> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { error } = await supabase.from("workout_logs").insert(log);
     if (error) throw error;
   },
 
   async getPersonalRecords(userId: string): Promise<PersonalRecord[]> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { data, error } = await supabase
       .from("personal_records")
       .select("*")
@@ -39,7 +39,7 @@ export const workoutsService = {
   },
 
   async getHistory(userId: string, exerciseName: string): Promise<WorkoutLog[]> {
-    const supabase = createClient();
+    const supabase = createClientOrThrow();
     const { data, error } = await supabase
       .from("workout_logs")
       .select("*")

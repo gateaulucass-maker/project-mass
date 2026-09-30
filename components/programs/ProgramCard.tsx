@@ -2,12 +2,13 @@
 
 import { motion } from "framer-motion"; // gardé pour la barre de progression
 import { Calendar, MoreHorizontal, CheckCircle2, Trash2, Play, Edit2, Dumbbell, Flame, Clock } from "lucide-react";
-import { format, parseISO, differenceInWeeks, differenceInDays } from "date-fns";
+import { format, parseISO, differenceInWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Program } from "@/types";
 import { getProgramTypeColor, getProgramTypeLabel, calculateWeightProgress, cn } from "@/lib/utils";
+import { daysUntil, todayLocal } from "@/lib/dates";
 
 interface ProgramCardProps {
   program: Program;
@@ -20,15 +21,15 @@ interface ProgramCardProps {
 export function ProgramCard({ program, index, currentWeight, onActivate, onDelete }: ProgramCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = todayLocal();
   const isUpcoming = program.start_date > todayStr;
   const isExpired  = !!program.completed || (!!program.end_date && program.end_date < todayStr);
 
   const daysLeft = program.end_date
-    ? differenceInDays(parseISO(program.end_date), new Date())
+    ? daysUntil(program.end_date)
     : null;
   const daysUntilStart = isUpcoming
-    ? differenceInDays(parseISO(program.start_date), new Date())
+    ? daysUntil(program.start_date)
     : null;
 
   const durationWeeks = program.end_date

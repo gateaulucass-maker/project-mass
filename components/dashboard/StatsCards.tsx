@@ -52,18 +52,25 @@ interface StatsCardsProps {
   totalSessions: number;
 }
 
-export function StatsCards({ currentWeight, targetWeight, startWeight = 78, sessionsThisWeek, weeklyFrequency, totalSessions }: StatsCardsProps) {
-  const weightDiff = (currentWeight - startWeight).toFixed(1);
+export function StatsCards({ currentWeight, targetWeight, startWeight, sessionsThisWeek, weeklyFrequency, totalSessions }: StatsCardsProps) {
+  // Sans pesée enregistrée, currentWeight vaut 0 : afficher "0 kg" et un écart de
+  // -78 kg (ancienne valeur par défaut inventée) n'avait aucun sens. On affiche "—".
+  const hasWeight = currentWeight > 0;
+  const hasBaseline = hasWeight && typeof startWeight === "number" && startWeight > 0;
+  const diff = hasBaseline ? currentWeight - startWeight : null;
+  const weightDiff = diff === null ? null : diff.toFixed(1);
+  const signedDiff = weightDiff === null ? "—" : `${diff! > 0 ? "+" : ""}${weightDiff} kg`;
+  const sessionRatio = weeklyFrequency > 0 ? Math.round((sessionsThisWeek / weeklyFrequency) * 100) : 0;
 
   const stats: StatCardProps[] = [
     {
       label: "Poids actuel",
-      value: `${currentWeight} kg`,
-      subValue: `Objectif: ${targetWeight} kg`,
+      value: hasWeight ? `${currentWeight} kg` : "—",
+      subValue: targetWeight > 0 ? `Objectif: ${targetWeight} kg` : "Aucun objectif",
       icon: Scale,
       color: "bg-brand-700/20",
-      change: `${Number(weightDiff) > 0 ? "+" : ""}${weightDiff} kg`,
-      changeUp: Number(weightDiff) > 0,
+      change: weightDiff === null ? undefined : signedDiff,
+      changeUp: (diff ?? 0) > 0,
       index: 0,
     },
     {
@@ -72,7 +79,7 @@ export function StatsCards({ currentWeight, targetWeight, startWeight = 78, sess
       subValue: "Cette semaine",
       icon: Calendar,
       color: "bg-blue-500/20",
-      change: `${Math.round((sessionsThisWeek / weeklyFrequency) * 100)}%`,
+      change: `${sessionRatio}%`,
       changeUp: sessionsThisWeek >= weeklyFrequency / 2,
       index: 1,
     },
@@ -86,11 +93,10 @@ export function StatsCards({ currentWeight, targetWeight, startWeight = 78, sess
     },
     {
       label: "Progression poids",
-      value: `+${weightDiff} kg`,
-      subValue: "Depuis reprise",
+      value: signedDiff,
+      subValue: "Depuis la première pesée",
       icon: TrendingUp,
       color: "bg-emerald-500/20",
-      change: "Fev 2026",
       index: 3,
     },
   ];

@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 // motion utilisé uniquement pour la barre de progression
@@ -10,9 +12,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { StatsCards } from "@/components/dashboard/StatsCards";
-import { WeightChart } from "@/components/dashboard/WeightChart";
-import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
-import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { RecentPRs } from "@/components/dashboard/RecentPRs";
 import { ProgramModal, type ProgramFormData } from "@/components/programs/ProgramModal";
 import {
@@ -20,27 +19,52 @@ import {
   MOCK_WORKOUTS,
   MOCK_USER,
 } from "@/lib/mock-data";
-import { getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+import {
+  checkKeyFor,
+  countAllSessions,
+  countSessionsForWeek,
+  countWeeklyStreak,
+  readWeekChecks,
+} from "@/lib/sessions";
 import { useLocalPrograms } from "@/hooks/useLocalPrograms";
 import { useLocalBodyweight } from "@/hooks/useLocalBodyweight";
 import { pushNotification } from "@/hooks/useNotifications";
 import { getNotificationPrefs } from "@/hooks/useNotificationPrefs";
-import { differenceInDays, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { calculateWeightProgress } from "@/lib/utils";
+import { daysUntil, todayLocal } from "@/lib/dates";
+
+const WeightChart = dynamic(() => import("@/components/dashboard/WeightChart").then((m) => m.WeightChart), {
+  ssr: false,
+  loading: () => <div className="h-[180px] animate-pulse rounded-lg bg-muted/40" />,
+});
+const PerformanceChart = dynamic(() => import("@/components/dashboard/PerformanceChart").then((m) => m.PerformanceChart), {
+  ssr: false,
+  loading: () => <div className="h-[200px] animate-pulse rounded-lg bg-muted/40" />,
+});
+const VolumeChart = dynamic(() => import("@/components/dashboard/VolumeChart").then((m) => m.VolumeChart), {
+  ssr: false,
+  loading: () => <div className="h-[150px] animate-pulse rounded-lg bg-muted/40" />,
+});
 
 export default function DashboardPage() {
   const router = useRouter();
   const { activeProgram, custom, isMock, addProgram, completeProgram } = useLocalPrograms();
   const { logs: weightLogs } = useLocalBodyweight();
   const currentWeight = weightLogs.length > 0 ? weightLogs[weightLogs.length - 1].weight : 0;
-  const today = format(new Date(), "EEEE dd MMMM", { locale: fr });
+  // Calculée après montage : rendue pendant le prérendu (serveur en UTC sur Vercel),
+  // elle produisait un écart d'hydratation autour de minuit heure de Paris.
+  const [today, setToday] = useState("");
+  useEffect(() => {
+    setToday(format(new Date(), "EEEE dd MMMM", { locale: fr }));
+  }, []);
 
   const [modalOpen, setModalOpen] = useState(false);
 
   const weeklyFrequency = activeProgram?.weekly_frequency ?? 3;
 
   const daysLeft = activeProgram?.end_date
-    ? differenceInDays(parseISO(activeProgram.end_date), new Date())
+    ? daysUntil(activeProgram.end_date)
     : null;
 
   const hasWeightGoal =
@@ -77,69 +101,25 @@ export default function DashboardPage() {
     function compute() {
       const day = new Date().getDay();
 
-      function parseChecks(key: string): Set<string> {
-        try {
-          const raw = localStorage.getItem(key);
-          return new Set(raw ? JSON.parse(raw) as string[] : []);
-        } catch { return new Set(); }
-      }
-
-      // Compte les workouts distincts cochés — SANS filtrer par programme
-      // évite les incohérences quand on change de programme en cours de semaine
-      // Extrait l'ID workout depuis une clé de check "workoutId_exerciseId"
-      // Les IDs d'exercices commencent toujours par "e" → "_e" est le séparateur fiable
-      // Gère : w1_e1 (PPL), w_1748xxx_e_1749xxx (ancien custom), w1748xxx_e1749xxx (nouveau)
-      function workoutIdFrom(checkKey: string): string {
-        return checkKey.split("_e")[0];
-      }
-
-      function countDone(checks: Set<string>): number {
-        const ids = new Set<string>();
-        for (const id of checks) ids.add(workoutIdFrom(id));
-        return ids.size;
-      }
-
-      const thisWeekChecks = parseChecks(getWeekStorageKey(0));
-      const doneThisWeek = countDone(thisWeekChecks);
+      // Comptage centralisé dans lib/sessions : une séance ne compte que si elle est
+      // terminée, au lieu d'être comptée dès qu'un seul de ses exercices était coché.
+      const doneThisWeek = countSessionsForWeek(0);
       setSessionsThisWeek(doneThisWeek);
-
-      // Total sessions : toutes les semaines
-      let total = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k?.startsWith("pm_checks_")) continue;
-        try {
-          const raw = localStorage.getItem(k);
-          if (!raw) continue;
-          const checks: string[] = JSON.parse(raw);
-          total += new Set(checks.map(workoutIdFrom)).size;
-        } catch {}
-      }
-      setTotalSessions(total);
-
-      // Streak hebdomadaire
-      let s = 0;
-      for (let offset = 0; offset >= -52; offset--) {
-        try {
-          const raw = localStorage.getItem(getWeekStorageKey(offset));
-          const hasDone = raw ? (JSON.parse(raw) as string[]).length > 0 : false;
-          if (hasDone) s++;
-          else if (offset < 0) break;
-        } catch { break; }
-      }
-      setStreak(s);
+      setTotalSessions(countAllSessions());
+      setStreak(countWeeklyStreak());
 
       if (day === 0) return;
 
       const n = workouts.length || 1;
-      // Rotation : doneThisWeek % n → prochain workout dans la liste
-      const prevDone = doneThisWeek === 0 ? countDone(parseChecks(getWeekStorageKey(-1))) : 0;
+      // Rotation : nombre de séances faites % n → prochaine séance dans la liste
+      const prevDone = doneThisWeek === 0 ? countSessionsForWeek(-1) : 0;
       const nextIndex = doneThisWeek > 0 ? doneThisWeek % n : prevDone % n;
 
       const workout = workouts[nextIndex];
       if (!workout) return;
       setTodayWorkout(workout);
-      const done = workout.exercises?.filter(e => thisWeekChecks.has(`${workout.id}_${e.id}`)).length ?? 0;
+      const thisWeekChecks = readWeekChecks(0);
+      const done = workout.exercises?.filter(e => thisWeekChecks.has(checkKeyFor(workout.id, e.id))).length ?? 0;
       setTodayDone(done);
     }
 
@@ -178,7 +158,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (todayComplete && !prevTodayCompleteRef.current && todayWorkout) {
       if (getNotificationPrefs().workout) {
-        const dateKey = new Date().toISOString().split("T")[0];
+        const dateKey = todayLocal();
         pushNotification(
           "workout",
           "Séance terminée",
@@ -194,7 +174,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!activeProgram || daysLeft === null) return;
     if (daysLeft >= 0 && daysLeft <= 7 && getNotificationPrefs().progress) {
-      const dateKey = new Date().toISOString().split("T")[0];
+      const dateKey = todayLocal();
       pushNotification(
         "program",
         "Programme bientôt terminé",
@@ -209,7 +189,9 @@ export default function DashboardPage() {
   // l'accueil revient alors à l'état "créer un nouveau programme".
   useEffect(() => {
     if (!activeProgram || isMock(activeProgram.id)) return;
-    const goalReached = hasWeightGoal && weightProgress >= 100;
+    // Sans aucun poids saisi, currentWeight vaut 0 et la progression est faussée :
+    // on n'autorise la détection "objectif atteint" que s'il existe un vrai relevé.
+    const goalReached = hasWeightGoal && weightLogs.length > 0 && weightProgress >= 100;
     const dateExpired = daysLeft !== null && daysLeft < 0;
     if (!goalReached && !dateExpired) return;
 
@@ -224,7 +206,7 @@ export default function DashboardPage() {
         `program-finished-${activeProgram.id}`
       );
     }
-  }, [activeProgram, hasWeightGoal, weightProgress, daysLeft, isMock, completeProgram]);
+  }, [activeProgram, hasWeightGoal, weightProgress, weightLogs.length, daysLeft, isMock, completeProgram]);
 
   async function handleCreateProgram(data: ProgramFormData) {
     const p = addProgram({ ...data, is_active: true });
@@ -329,7 +311,7 @@ export default function DashboardPage() {
         {/* Stats */}
         <StatsCards
           currentWeight={currentWeight}
-          targetWeight={activeProgram?.target_weight ?? 90}
+          targetWeight={activeProgram?.target_weight ?? 0}
           startWeight={activeProgram?.start_weight ?? weightLogs[0]?.weight}
           sessionsThisWeek={sessionsThisWeek}
           weeklyFrequency={weeklyFrequency}

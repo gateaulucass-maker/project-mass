@@ -1,61 +1,34 @@
 "use client";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { memo } from "react";
+import { LineChart, Line, Tooltip, ResponsiveContainer, Legend, type TooltipProps } from "recharts";
 import { MOCK_PERFORMANCE_DATA } from "@/lib/mock-data";
+import { CHART_MARGIN, ChartTooltip, dateXAxis, valueYAxis } from "./charts/ChartShell";
+import { CHART_COLORS } from "./charts/palette";
 
 const lines = [
-  { key: "squat",     label: "Squat",              color: "#B91C1C" },
-  { key: "bench",     label: "Dév. couché",        color: "#9333EA" },
-  { key: "tractions", label: "Tractions",           color: "#2563EB" },
-  { key: "rowing",    label: "Rowing barre",        color: "#059669" },
-  { key: "militaire", label: "Dev. militaire",      color: "#D97706" },
+  { key: "squat",     label: "Squat",          color: CHART_COLORS.brand700 },
+  { key: "bench",     label: "Dév. couché",    color: CHART_COLORS.purple },
+  { key: "tractions", label: "Tractions",      color: CHART_COLORS.blueStrong },
+  { key: "rowing",    label: "Rowing barre",   color: CHART_COLORS.emerald },
+  { key: "militaire", label: "Dev. militaire", color: CHART_COLORS.amber },
 ];
 
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white border border-border rounded-xl px-3 py-2.5 shadow-lg text-xs space-y-1.5">
-      <p className="text-muted-foreground font-medium">{label}</p>
-      {payload.map((p: any) => (
-        <div key={p.dataKey} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-foreground/80">{p.name}</span>
-          <span className="font-bold ml-auto">{p.value} kg</span>
-        </div>
-      ))}
-    </div>
-  );
+function PerformanceTooltip({ active, payload, label }: TooltipProps<number, string>) {
+  const rows = (payload ?? []).map((p) => ({ label: p.name, value: `${p.value} kg`, color: p.color }));
+  return <ChartTooltip variant="legend" active={active} label={label} rows={rows} />;
 }
 
-export function PerformanceChart() {
+export const PerformanceChart = memo(function PerformanceChart() {
   return (
     <ResponsiveContainer width="100%" height={200}>
-      <LineChart data={MOCK_PERFORMANCE_DATA} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
-        <XAxis
-          dataKey="date"
-          tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-          tickLine={false}
-          axisLine={false}
-        />
-        <YAxis
-          tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(v) => `${v}`}
-          width={35}
-        />
-        <Tooltip content={<CustomTooltip />} />
+      <LineChart data={MOCK_PERFORMANCE_DATA} margin={CHART_MARGIN}>
+        {dateXAxis()}
+        {valueYAxis({ width: 35, tickFormatter: (v) => `${v}` })}
+        <Tooltip content={<PerformanceTooltip />} />
         <Legend
           wrapperStyle={{ fontSize: "10px", paddingTop: "8px" }}
-          formatter={(value) => <span style={{ color: "hsl(var(--muted-foreground))" }}>{value}</span>}
+          formatter={(value) => <span style={{ color: CHART_COLORS.mutedForeground }}>{value}</span>}
         />
         {lines.map((l) => (
           <Line
@@ -66,10 +39,10 @@ export function PerformanceChart() {
             stroke={l.color}
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 4, stroke: "#fff", strokeWidth: 2 }}
+            activeDot={{ r: 4, stroke: CHART_COLORS.white, strokeWidth: 2 }}
           />
         ))}
       </LineChart>
     </ResponsiveContainer>
   );
-}
+});

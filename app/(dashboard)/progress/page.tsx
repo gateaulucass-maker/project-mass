@@ -1,14 +1,23 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { motion } from "framer-motion";
 import { TrendingUp, Trophy, Zap } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
 import { RecentPRs } from "@/components/dashboard/RecentPRs";
-import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { MOCK_PERSONAL_RECORDS, MOCK_WEEKLY_STATS } from "@/lib/mock-data";
 import { formatVolume } from "@/lib/utils";
+
+const PerformanceChart = dynamic(() => import("@/components/dashboard/PerformanceChart").then((m) => m.PerformanceChart), {
+  ssr: false,
+  loading: () => <div className="h-[200px] animate-pulse rounded-lg bg-muted/40" />,
+});
+const VolumeChart = dynamic(() => import("@/components/dashboard/VolumeChart").then((m) => m.VolumeChart), {
+  ssr: false,
+  loading: () => <div className="h-[150px] animate-pulse rounded-lg bg-muted/40" />,
+});
 
 const KEY_LIFTS = [
   { name: "Squat", current: 90, prev: 70, reps: 6 },

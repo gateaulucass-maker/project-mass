@@ -27,6 +27,12 @@ export default function SignupPage() {
     setLoading(true);
 
     const supabase = createClient();
+    if (!supabase) {
+      // Supabase n'est pas configuré : on le dit, au lieu de planter sur un client vide.
+      toast.error("Authentification non configurée sur cette installation.");
+      setLoading(false);
+      return;
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -40,7 +46,7 @@ export default function SignupPage() {
     }
 
     toast.success("Compte créé ! Vérifie ton email.");
-    router.push("/dashboard");
+    router.push("/");
   }
 
   return (
