@@ -1,19 +1,22 @@
 # Project Mass
-App de musculation premium : Next.js 15 (App Router), Supabase, Framer Motion, Tailwind, thème violet.
+App de musculation premium : Next.js 15 (App Router), Framer Motion, Tailwind, thème violet.
+Données : localStorage du navigateur (hooks/useLocal*, lib/sessions.ts). Pas de base en ligne utilisée par l'interface.
 
 ## Commandes
 - `npm run dev`, `npm run build`, `npm run lint`. Pas de tests configurés (à compléter).
 
 ## Architecture
 - app/ : routes ((auth), (dashboard), api, auth). components/, hooks/, lib/, services/, types/.
-- supabase/schema.sql : schéma. middleware.ts : protection des routes.
+- middleware.ts : mot de passe optionnel (APP_PASSWORD, cookie HMAC), couvre aussi /api/*.
+- Reliquats non branchés à l'interface : lib/supabase/, supabase/schema.sql, routes app/api/{programs,workouts,setup} (Google Sheets).
 
 ## Règles du projet
-- RLS obligatoire sur chaque table Supabase.
+- Si une base en ligne est ajoutée : RLS obligatoire sur chaque table.
+- Toute lecture localStorage passe par une validation de forme (une valeur corrompue = page blanche).
 - Avant d'écrire du Next.js, lire node_modules/next/dist/docs/.
 
 ## Pièges
-- SETUP.md décrit une ancienne base Google Sheets : à compléter / à mettre à jour, la base réelle est Supabase.
+- SETUP.md décrit l'ancienne base Google Sheets : obsolète, les données réelles sont en localStorage.
 
 ## graphify
 
