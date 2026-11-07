@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Play, Dumbbell, ChevronRight, Clock } from "lucide-react";
+import { Dumbbell, ChevronRight, Clock } from "lucide-react";
 import type { Workout } from "@/types";
 import { getWorkoutTypeColor, getWorkoutTypeLabel, cn } from "@/lib/utils";
 

@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 import { isSheetsConfigured } from "@/lib/google-sheets";
 import { getAllWorkouts, getWorkoutsByProgram, createWorkout, createExercise } from "@/services/sheets-workouts";
 import { MOCK_WORKOUTS } from "@/lib/mock-data";
 
 export async function GET(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const programId = searchParams.get("programId");
 
@@ -15,11 +18,13 @@ export async function GET(req: Request) {
     const workouts = programId ? await getWorkoutsByProgram(programId) : await getAllWorkouts();
     return NextResponse.json(workouts);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   if (!isSheetsConfigured()) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
@@ -31,6 +36,6 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(created);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
   }
 }

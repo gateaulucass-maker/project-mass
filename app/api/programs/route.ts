@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 import { isSheetsConfigured } from "@/lib/google-sheets";
 import {
   getPrograms,
@@ -10,7 +11,9 @@ import {
 import { MOCK_PROGRAMS } from "@/lib/mock-data";
 import type { Program } from "@/types";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   if (!isSheetsConfigured()) {
     return NextResponse.json(MOCK_PROGRAMS);
   }
@@ -25,6 +28,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const body = await req.json();
 
   // Programme de secours local — toujours valide côté UI
@@ -58,6 +63,8 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const body = await req.json();
   const { id, action, ...updates } = body;
 
@@ -79,6 +86,8 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const { id } = await req.json();
 
   if (!isSheetsConfigured()) {

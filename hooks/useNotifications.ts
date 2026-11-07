@@ -21,7 +21,8 @@ export interface Notif {
 function load(): Notif[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Notif[]) : [];
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? (parsed as Notif[]) : [];
   } catch {
     return [];
   }

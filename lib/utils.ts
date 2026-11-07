@@ -110,20 +110,23 @@ export function formatDuration(minutes: number): string {
   return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
+// Arrondi sur les secondes totales : arrondir min et sec séparément produit "5:60/km".
+function formatPaceValue(paceMin: number, suffix: string): string {
+  if (!Number.isFinite(paceMin) || paceMin <= 0) return "—";
+  const totalSec = Math.round(paceMin * 60);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}:${String(sec).padStart(2, "0")}${suffix}`;
+}
+
 export function formatPacePerKm(durationMin: number, distanceKm: number): string {
   if (!distanceKm) return "—";
-  const paceMin = durationMin / distanceKm;
-  const min = Math.floor(paceMin);
-  const sec = Math.round((paceMin - min) * 60);
-  return `${min}:${String(sec).padStart(2, "0")}/km`;
+  return formatPaceValue(durationMin / distanceKm, "/km");
 }
 
 export function formatPacePer100m(durationMin: number, distanceM: number): string {
   if (!distanceM) return "—";
-  const paceMin = durationMin / (distanceM / 100);
-  const min = Math.floor(paceMin);
-  const sec = Math.round((paceMin - min) * 60);
-  return `${min}:${String(sec).padStart(2, "0")}/100m`;
+  return formatPaceValue(durationMin / (distanceM / 100), "/100m");
 }
 
 export function getRunTypeLabel(type: string): string {

@@ -8,9 +8,17 @@ import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { MOCK_WORKOUTS } from "@/lib/mock-data";
 import { getWorkoutTypeLabel } from "@/lib/utils";
-import { useWorkoutChecks, getWeekStorageKey } from "@/hooks/useWorkoutChecks";
+import { toast } from "sonner";
+import type { Workout } from "@/types";
+import { useWorkoutChecks } from "@/hooks/useWorkoutChecks";
+import {
+  checkKeyFor,
+  completeSession,
+  countSessionsForWeek,
+  isWorkoutFullyChecked,
+  uncompleteSession,
+} from "@/lib/sessions";
 import { useLocalPrograms } from "@/hooks/useLocalPrograms";
 
 interface ExerciseOverride {
@@ -25,8 +33,9 @@ export default function WorkoutsPage() {
   const { checked, toggle } = useWorkoutChecks(weekOffset);
   const { activeProgram } = useLocalPrograms();
 
-  // Utilise les séances du programme actif, PPL en fallback
-  const workouts = activeProgram?.workouts?.length ? activeProgram.workouts : MOCK_WORKOUTS;
+  // Uniquement les séances du vrai programme actif : le repli sur MOCK_WORKOUTS
+  // affichait un programme de démo comme s'il était le tien.
+  const workouts = activeProgram?.workouts ?? [];
 
   const [todayWorkoutId, setTodayWorkoutId] = useState<string | null>(null);
 
@@ -35,26 +44,44 @@ export default function WorkoutsPage() {
     const day = new Date().getDay();
     if (day === 0) { setTodayWorkoutId(null); return; }
 
-    function countDone(checks: Set<string>): number {
-      const ids = new Set<string>();
-      for (const id of checks) ids.add(id.split("_e")[0]);
-      return ids.size;
-    }
-
-    const doneThisWeek = countDone(checked);
+    const doneThisWeek = countSessionsForWeek(weekOffset);
     const n = workouts.length || 1;
     let nextIndex = 0;
     if (doneThisWeek > 0) {
       nextIndex = doneThisWeek % n;
     } else {
-      try {
-        const raw = localStorage.getItem(getWeekStorageKey(-1));
-        const prevChecks = new Set<string>(raw ? JSON.parse(raw) as string[] : []);
-        nextIndex = countDone(prevChecks) % n;
-      } catch {}
+      nextIndex = countSessionsForWeek(weekOffset - 1) % n;
     }
     setTodayWorkoutId(workouts[nextIndex]?.id ?? null);
   }, [weekOffset, checked, workouts]);
+
+  /**
+   * Coche/décoche un exercice, puis met à jour l'état "séance terminée".
+   * Une séance ne compte que lorsque TOUS ses exercices sont cochés.
+   */
+  function handleToggle(workout: Workout, checkId: string) {
+    toggle(checkId);
+
+    const next = new Set(checked);
+    if (next.has(checkId)) next.delete(checkId);
+    else next.add(checkId);
+
+    const full = isWorkoutFullyChecked(next, workout);
+    try {
+      if (full) {
+        completeSession(weekOffset, {
+          workout_id: workout.id,
+          workout_title: workout.title,
+          completed_at: new Date().toISOString(),
+        });
+        toast.success(`${workout.title} terminée 💪`);
+      } else {
+        uncompleteSession(weekOffset, workout.id);
+      }
+    } catch {
+      toast.error("Stockage indisponible : la séance n'a pas été enregistrée.");
+    }
+  }
 
   const [overrides, setOverrides] = useState<Record<string, ExerciseOverride>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -147,7 +174,7 @@ export default function WorkoutsPage() {
                     </span>
                     {isToday && (
                       <span className="text-[10px] font-bold text-brand-700 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full">
-                        Aujourd'hui
+                        Aujourd&apos;hui
                       </span>
                     )}
                     {allDone && (
@@ -190,7 +217,7 @@ export default function WorkoutsPage() {
                       <div className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${done ? "bg-emerald-50/50" : "hover:bg-secondary/20"}`}>
                         {/* Checkbox — taille augmentée pour le tactile */}
                         <button
-                          onClick={() => toggle(id)}
+                          onClick={() => handleToggle(workout, id)}
                           className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all active:scale-95 ${
                             done ? "bg-emerald-500 border-emerald-500" : "border-border bg-white"
                           }`}

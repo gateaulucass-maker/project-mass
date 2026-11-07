@@ -13,7 +13,8 @@ export function useLocalSwimming() {
     function load() {
       try {
         const raw = localStorage.getItem(KEY);
-        setLogs(raw ? JSON.parse(raw) : []);
+        const parsed = raw ? JSON.parse(raw) : null;
+        setLogs(Array.isArray(parsed) ? parsed : []);
       } catch { setLogs([]); }
       setLoading(false);
     }

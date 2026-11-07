@@ -141,3 +141,21 @@ input[type="number"] {
 .recharts-cartesian-grid-vertical line {
   stroke: rgba(0, 0, 0, 0.05) !important;
 }
+
+/* Focus clavier : le projet applique focus:outline-none sur ~29 éléments sans
+   remplacement, donc boutons et liens n'avaient aucun indicateur de focus. */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Respecte le réglage système "réduire les animations". */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

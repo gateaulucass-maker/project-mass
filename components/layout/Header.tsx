@@ -16,7 +16,8 @@ export function Header({ title, subtitle }: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-4 lg:px-6 py-4 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-40">
       <div>
-        {title && <h1 className="text-lg font-bold">{title}</h1>}
+        {/* <p> et non <h1> : PageHeader porte déjà le h1 de la page (2 h1 par page sinon). */}
+        {title && <p className="text-lg font-bold">{title}</p>}
         {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
       </div>
 

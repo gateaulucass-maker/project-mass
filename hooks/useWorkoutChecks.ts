@@ -16,7 +16,8 @@ export function useWorkoutChecks(weekOffset: number) {
     function read() {
       try {
         const raw = localStorage.getItem(storageKey);
-        setChecked(new Set(raw ? (JSON.parse(raw) as string[]) : []));
+        const parsed = raw ? JSON.parse(raw) : null;
+        setChecked(new Set(Array.isArray(parsed) ? (parsed as string[]) : []));
       } catch {
         setChecked(new Set());
       }

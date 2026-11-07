@@ -1,86 +1,69 @@
 "use client";
 
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from "recharts";
-import { format, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
+import { memo, useMemo } from "react";
+import { AreaChart, Area, Tooltip, ResponsiveContainer, ReferenceLine, type TooltipProps } from "recharts";
 import type { BodyweightLog } from "@/types";
+import { CHART_MARGIN, ChartTooltip, dateXAxis, formatChartDate, valueYAxis } from "./charts/ChartShell";
+import { CHART_COLORS } from "./charts/palette";
 
 interface WeightChartProps {
   data: BodyweightLog[];
   targetWeight?: number;
 }
 
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
+function WeightTooltip({ active, payload, label }: TooltipProps<number, string>) {
+  const value = payload?.[0]?.value;
   return (
-    <div className="bg-card border border-border rounded-xl px-3 py-2.5 shadow-lg text-sm">
-      <p className="text-muted-foreground text-xs mb-1">{label}</p>
-      <p className="font-bold text-brand-700">{payload[0]?.value?.toFixed(1)} kg</p>
-    </div>
+    <ChartTooltip
+      active={active && !!payload?.length}
+      label={label}
+      rows={[{ value: `${value?.toFixed(1)} kg`, color: CHART_COLORS.brand700 }]}
+    />
   );
 }
 
-export function WeightChart({ data, targetWeight }: WeightChartProps) {
-  const chartData = data.map((d) => ({
-    date: format(parseISO(d.created_at), "dd MMM", { locale: fr }),
-    weight: d.weight,
-  }));
-
-  const minWeight = Math.min(...data.map(d => d.weight)) - 0.5;
-  const maxWeight = Math.max(...data.map(d => d.weight)) + 0.5;
+export const WeightChart = memo(function WeightChart({ data, targetWeight }: WeightChartProps) {
+  const chartData = useMemo(
+    () => data.map((d) => ({ date: formatChartDate(d.created_at), weight: d.weight })),
+    [data]
+  );
+  const domain = useMemo<[number, number] | undefined>(() => {
+    if (!data.length) return undefined;
+    const w = data.map((d) => d.weight);
+    return [Math.min(...w) - 0.5, Math.max(...w) + 0.5];
+  }, [data]);
 
   return (
     <ResponsiveContainer width="100%" height={180}>
-      <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
+      <AreaChart data={chartData} margin={CHART_MARGIN}>
         <defs>
           <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+            <stop offset="5%" stopColor={CHART_COLORS.violet} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={CHART_COLORS.violet} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis
-          dataKey="date"
-          tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-          tickLine={false}
-          axisLine={false}
-          interval="preserveStartEnd"
-        />
-        <YAxis
-          domain={[minWeight, maxWeight]}
-          tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(v) => `${v}kg`}
-          width={45}
-        />
-        <Tooltip content={<CustomTooltip />} />
+        {dateXAxis("preserveStartEnd")}
+        {valueYAxis({ domain, width: 45, tickFormatter: (v) => `${v}kg` })}
+        <Tooltip content={<WeightTooltip />} />
         {targetWeight && (
           <ReferenceLine
             y={targetWeight}
-            stroke="#7c3aed"
+            stroke={CHART_COLORS.violet}
             strokeDasharray="4 4"
             strokeOpacity={0.5}
-            label={{ value: `Objectif ${targetWeight}kg`, position: "insideTopRight", fontSize: 10, fill: "#7c3aed" }}
+            label={{ value: `Objectif ${targetWeight}kg`, position: "insideTopRight", fontSize: 10, fill: CHART_COLORS.violet }}
           />
         )}
         <Area
           type="monotone"
           dataKey="weight"
-          stroke="#7c3aed"
+          stroke={CHART_COLORS.violet}
           strokeWidth={2}
           fill="url(#weightGradient)"
           dot={false}
-          activeDot={{ r: 4, fill: "#7c3aed", stroke: "hsl(var(--background))", strokeWidth: 2 }}
+          activeDot={{ r: 4, fill: CHART_COLORS.violet, stroke: CHART_COLORS.background, strokeWidth: 2 }}
         />
       </AreaChart>
     </ResponsiveContainer>
   );
-}
+});

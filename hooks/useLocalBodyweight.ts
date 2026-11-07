@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import type { BodyweightLog } from "@/types";
-import { MOCK_BODYWEIGHT } from "@/lib/mock-data";
 
 const KEY = "pm_bodyweight";
 
@@ -14,14 +13,11 @@ export function useLocalBodyweight() {
     function load() {
       try {
         const raw = localStorage.getItem(KEY);
-        if (raw) {
-          setLogs(JSON.parse(raw));
-        } else {
-          // Initialise avec les données mock au premier usage
-          setLogs(MOCK_BODYWEIGHT);
-          localStorage.setItem(KEY, JSON.stringify(MOCK_BODYWEIGHT));
-        }
-      } catch { setLogs(MOCK_BODYWEIGHT); }
+        // Pas d'amorçage mock : un utilisateur neuf part d'un historique vide,
+        // sinon le dernier poids de démo (90 kg) déclenche "objectif atteint" d'office.
+        const parsed = raw ? JSON.parse(raw) : null;
+        setLogs(Array.isArray(parsed) ? parsed : []);
+      } catch { setLogs([]); }
       setLoading(false);
     }
     load();
