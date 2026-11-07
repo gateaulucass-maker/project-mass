@@ -7,7 +7,7 @@ Données : localStorage du navigateur (hooks/useLocal*, lib/sessions.ts). Pas de
 
 ## Architecture
 - app/ : routes ((auth), (dashboard), api, auth). components/, hooks/, lib/, services/, types/.
-- middleware.ts : mot de passe optionnel (APP_PASSWORD, cookie HMAC), couvre aussi /api/*.
+- middleware.ts + lib/auth.ts : sans APP_PASSWORD, /api/* = 503 en prod ; avec APP_PASSWORD, AUTH_SECRET obligatoire. Voir docs/securite.md.
 - Reliquats non branchés à l'interface : lib/supabase/, supabase/schema.sql, routes app/api/{programs,workouts,setup} (Google Sheets).
 
 ## Règles du projet
