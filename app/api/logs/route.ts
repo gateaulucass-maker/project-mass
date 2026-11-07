@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 import { isSheetsConfigured } from "@/lib/google-sheets";
 import { logWorkoutSet, getWorkoutLogs } from "@/services/sheets-workouts";
 
 export async function GET(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const exercise = searchParams.get("exercise") ?? undefined;
 
@@ -18,6 +21,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   if (!isSheetsConfigured()) {
     return NextResponse.json({ ok: true }); // silently succeed in demo mode
   }

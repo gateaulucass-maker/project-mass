@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 import { isSheetsConfigured } from "@/lib/google-sheets";
 import { getBodyweightLogs, logBodyweight } from "@/services/sheets-bodyweight";
 import { MOCK_BODYWEIGHT } from "@/lib/mock-data";
 import type { BodyweightLog } from "@/types";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   if (!isSheetsConfigured()) {
     return NextResponse.json(MOCK_BODYWEIGHT);
   }
@@ -18,6 +21,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const body = await req.json();
   const weight = parseFloat(body.weight);
 

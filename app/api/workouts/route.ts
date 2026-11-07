@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 import { isSheetsConfigured } from "@/lib/google-sheets";
 import { getAllWorkouts, getWorkoutsByProgram, createWorkout, createExercise } from "@/services/sheets-workouts";
 import { MOCK_WORKOUTS } from "@/lib/mock-data";
 
 export async function GET(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const programId = searchParams.get("programId");
 
@@ -20,6 +23,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const denied = await requireAuth(req);
+  if (denied) return denied;
   if (!isSheetsConfigured()) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
