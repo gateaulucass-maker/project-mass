@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const workouts = programId ? await getWorkoutsByProgram(programId) : await getAllWorkouts();
     return NextResponse.json(workouts);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
   }
 }
 
@@ -31,6 +31,6 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(created);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
   }
 }

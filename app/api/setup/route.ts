@@ -9,7 +9,7 @@ export async function POST() {
     await initializeSheets();
     return NextResponse.json({ ok: true, message: "Sheets initialized successfully" });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
   }
 }
 

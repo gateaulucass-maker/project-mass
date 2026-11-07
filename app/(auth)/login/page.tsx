@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { isAuthEnabled } from "@/lib/auth";
+import { authState } from "@/lib/auth";
 import { LoginForm } from "./LoginForm";
 import { PasswordGate } from "./PasswordGate";
 
@@ -11,7 +11,7 @@ import { PasswordGate } from "./PasswordGate";
  * ce qui empêche sinon le prérendu statique de /login.
  */
 export default function LoginPage() {
-  if (!isAuthEnabled()) return <LoginForm />;
+  if (authState() !== "enabled") return <LoginForm />;
   return (
     <Suspense fallback={<div className="h-72" />}>
       <PasswordGate />
