@@ -1,27 +1,37 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { AUTH_COOKIE, buildToken, safeEqual } from "@/lib/auth";
+import { AUTH_COOKIE, apiClosedByDefault, authState, isValidSessionToken } from "@/lib/auth";
 
 /**
- * Protection optionnelle : inactive tant que `APP_PASSWORD` n'est pas défini.
- *
- * Deux correctifs par rapport à la version précédente :
- *  - le matcher n'exclut plus `api/`, donc les routes d'écriture sont couvertes
- *    (avant, même avec un mot de passe, POST /api/programs restait ouvert) ;
- *  - le cookie contient un jeton dérivé, pas le mot de passe en clair.
+ * - Sans mot de passe : pages ouvertes, routes /api/* fermées en production (503).
+ * - Mot de passe sans AUTH_SECRET : tout est fermé (échec sûr).
+ * - Mot de passe + AUTH_SECRET : cookie de session signé exigé partout sauf /login.
  */
 export async function middleware(request: NextRequest) {
-  const password = process.env.APP_PASSWORD;
-  if (!password) return NextResponse.next();
-
   const { pathname } = request.nextUrl;
+  const isApi = pathname.startsWith("/api/");
+  const state = authState();
+
+  if (state === "disabled") {
+    if (isApi && apiClosedByDefault()) {
+      return NextResponse.json({ error: "Service indisponible" }, { status: 503 });
+    }
+    return NextResponse.next();
+  }
+
+  if (state === "misconfigured") {
+    return isApi
+      ? NextResponse.json({ error: "Service indisponible" }, { status: 503 })
+      : new NextResponse("Configuration incomplète : AUTH_SECRET manquant.", { status: 503 });
+  }
+
   // La page de connexion et sa route de vérification doivent rester joignables.
   if (pathname === "/login" || pathname === "/api/auth/login") return NextResponse.next();
 
-  const cookie = request.cookies.get(AUTH_COOKIE)?.value;
-  const expected = await buildToken(password);
-  if (cookie && safeEqual(cookie, expected)) return NextResponse.next();
+  if (await isValidSessionToken(request.cookies.get(AUTH_COOKIE)?.value)) {
+    return NextResponse.next();
+  }
 
-  if (pathname.startsWith("/api/")) {
+  if (isApi) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 

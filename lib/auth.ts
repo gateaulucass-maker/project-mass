@@ -1,38 +1,50 @@
-import "server-only";
-
 /**
- * Protection optionnelle par mot de passe unique (application personnelle).
+ * Protection par mot de passe unique (application personnelle).
  *
- * Elle reste DÉSACTIVÉE tant que `APP_PASSWORD` n'est pas défini, donc le
- * comportement actuel ne change pas. Auparavant, la définir enfermait tout le monde
- * dehors : le middleware attendait un cookie `app_auth` que rien n'écrivait, et le
- * matcher excluait `api/`, laissant les routes d'écriture ouvertes.
+ * - `APP_PASSWORD` + `AUTH_SECRET` définis : /login demande le mot de passe, tout est fermé sans cookie.
+ * - `APP_PASSWORD` défini sans `AUTH_SECRET` : configuration incomplète, tout est fermé (échec sûr).
+ * - Rien de défini : les pages restent ouvertes (données en localStorage), mais les routes
+ *   /api/* sont fermées en production (voir `apiClosedByDefault`).
  *
- * Le cookie contient désormais un jeton dérivé du mot de passe (HMAC), et non le mot
- * de passe en clair, et il est posé en `httpOnly`.
+ * Jeton de session : `<expiration>.<HMAC-SHA256(AUTH_SECRET, "pm-v2|" + expiration + "|" + mot de passe)>`.
+ * La clé secrète empêche l'attaque hors ligne d'un cookie volé, l'expiration est signée,
+ * et changer le mot de passe ou le secret invalide toutes les sessions.
+ * Web Crypto uniquement : compatible runtime Edge (middleware).
  */
 
 export const AUTH_COOKIE = "pm_auth";
+export const SESSION_SECONDS = 60 * 60 * 24 * 30;
 
-function getSecret(): string | null {
+type AuthState = "disabled" | "enabled" | "misconfigured";
+
+export function authState(): AuthState {
   const pwd = process.env.APP_PASSWORD;
-  return pwd && pwd.length > 0 ? pwd : null;
+  if (!pwd) return "disabled";
+  const secret = process.env.AUTH_SECRET;
+  return secret && secret.length >= 32 ? "enabled" : "misconfigured";
 }
 
-export function isAuthEnabled(): boolean {
-  return getSecret() !== null;
+/** Sans mot de passe configuré, les routes API ne sont pas exposées en production. */
+export function apiClosedByDefault(): boolean {
+  return authState() === "disabled" && process.env.NODE_ENV === "production";
 }
 
-/** Jeton opaque dérivé du mot de passe. Web Crypto : compatible runtime Edge. */
-export async function buildToken(password: string): Promise<string> {
-  const data = new TextEncoder().encode(`pm-v1:${password}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest))
+async function hmacHex(key: string, message: string): Promise<string> {
+  const enc = new TextEncoder();
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(key),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(message));
+  return Array.from(new Uint8Array(sig))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
-/** Comparaison à temps constant : évite de fuiter le préfixe correct par le timing. */
+/** Comparaison à temps constant (les deux chaînes sont des hex de longueur fixe). */
 export function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -40,24 +52,53 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+/** Crée un jeton de session signé. À appeler seulement si `authState() === "enabled"`. */
+export async function createSessionToken(nowMs = Date.now()): Promise<string> {
+  const exp = Math.floor(nowMs / 1000) + SESSION_SECONDS;
+  const sig = await hmacHex(process.env.AUTH_SECRET!, `pm-v2|${exp}|${process.env.APP_PASSWORD}`);
+  return `${exp}.${sig}`;
+}
+
+export async function isValidSessionToken(token: string | undefined, nowMs = Date.now()): Promise<boolean> {
+  if (authState() !== "enabled" || !token) return false;
+  const dot = token.indexOf(".");
+  if (dot <= 0) return false;
+  const expStr = token.slice(0, dot);
+  if (!/^\d{1,12}$/.test(expStr)) return false;
+  const exp = Number(expStr);
+  if (exp * 1000 <= nowMs) return false;
+  const expected = await hmacHex(process.env.AUTH_SECRET!, `pm-v2|${exp}|${process.env.APP_PASSWORD}`);
+  return safeEqual(token.slice(dot + 1), expected);
+}
+
 export async function isValidPassword(candidate: string): Promise<boolean> {
-  const secret = getSecret();
-  if (!secret) return false;
-  return safeEqual(await buildToken(candidate), await buildToken(secret));
+  if (authState() !== "enabled") return false;
+  // HMAC des deux côtés : longueurs égales, comparaison à temps constant.
+  const key = process.env.AUTH_SECRET!;
+  return safeEqual(
+    await hmacHex(key, `pwd|${candidate}`),
+    await hmacHex(key, `pwd|${process.env.APP_PASSWORD}`)
+  );
 }
 
-export async function isValidToken(token: string | undefined): Promise<boolean> {
-  const secret = getSecret();
-  if (!secret) return true; // protection désactivée
-  if (!token) return false;
-  return safeEqual(token, await buildToken(secret));
-}
-
-/** Garde à appeler en tête des routes API. `null` = requête autorisée. */
-export async function requireAuth(request: Request): Promise<Response | null> {
-  if (!isAuthEnabled()) return null;
+function readCookie(request: Request): string | undefined {
   const cookie = request.headers.get("cookie") ?? "";
   const match = cookie.match(new RegExp(`(?:^|;\\s*)${AUTH_COOKIE}=([^;]+)`));
-  if (await isValidToken(match?.[1])) return null;
+  return match?.[1];
+}
+
+/** Garde à appeler en tête des routes API (défense en profondeur). `null` = autorisé. */
+export async function requireAuth(request: Request): Promise<Response | null> {
+  const state = authState();
+  if (state === "disabled") {
+    if (apiClosedByDefault()) {
+      return Response.json({ error: "Service indisponible" }, { status: 503 });
+    }
+    return null; // développement local sans mot de passe
+  }
+  if (state === "misconfigured") {
+    return Response.json({ error: "Service indisponible" }, { status: 503 });
+  }
+  if (await isValidSessionToken(readCookie(request))) return null;
   return Response.json({ error: "Non autorisé" }, { status: 401 });
 }
